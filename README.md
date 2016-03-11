@@ -16,7 +16,6 @@ your css should contain the following lines:
 ```css
 .sticky {
   position: sticky;
-  top: 0;
 }
 
 .sticky.sticky-fixed.is-sticky {
