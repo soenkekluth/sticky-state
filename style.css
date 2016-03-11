@@ -1,9 +1,13 @@
 .sticky {
+  position: -webkit-sticky;
+  position: -moz-sticky;
+  position: -ms-sticky;
+  position: -o-sticky;
   position: sticky;
-  top: 0;
 }
 
 .sticky.sticky-fixed.is-sticky {
   position: fixed;
-  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+          backface-visibility: hidden;
 }

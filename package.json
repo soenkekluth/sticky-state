@@ -4,7 +4,12 @@
   "description": "sticky-state adds state to sticky elements and polyfills the missing sticky feature",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build-debug": "browserify ./index.js -d --standalone StickyState > dist/stickystate.js",
+    "build-min": "browserify ./index.js --standalone StickyState | uglifyjs -c > dist/stickystate.min.js",
+    "build": "npm run build-debug && npm run build-min",
+    "start": "npm run build-debug && node ./node_modules/concurrently/src/main.js --kill-others \"watchify ./index.js -d --s StickyState -o dist/stickystate.js -v\" \"npm run server\"",
+    "server": "browser-sync start --server --directory --files 'dist/*.js' --startPath examples/index.html"
   },
   "repository": {
     "type": "git",
@@ -27,5 +32,12 @@
   "dependencies": {
     "fastscroll": "^1.3.0",
     "object-assign": "^4.0.1"
+  },
+  "devDependencies": {
+    "browser-sync": "^2.11.1",
+    "browserify": "^13.0.0",
+    "concurrently": "^2.0.0",
+    "uglifyjs": "^2.4.10",
+    "watchify": "^3.7.0"
   }
 }

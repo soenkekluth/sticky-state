@@ -9,9 +9,23 @@ var defaults = {
   top: null,
   bottom: null,
   disabled: false,
+  restrict: null,
   className: 'sticky',
   useAnimationFrame: false,
   stateclassName: 'is-sticky'
+};
+
+
+function getAbsolutPosition(el) {
+  var rect = el.getBoundingClientRect();
+  var scrollPos = (window.scrollY || window.pageYOffset || 0);
+  var top = rect.top + scrollPos;
+  return {
+      top: top,
+      bottom: top + rect.height,
+      height: rect.height,
+      width: rect.width
+    };
 };
 
 function canSticky(stickyClass) {
@@ -37,19 +51,20 @@ function getFastScroll() {
   return _globals.fastScroll;
 }
 
-var Sticky = function(element, options) {
+var StickyState = function(element, options) {
   if (!element) {
-    throw new Error('Sticky needs a DomElement');
+    throw new Error('StickyState needs a DomElement');
     return;
   }
   this.el = element;
   this.options = assign({}, defaults, options);
 
   this.state = assign({}, this.options, {
-    sticky: this.options.top === 0,
-    height: 'auto'
+    sticky: false,
+    height: null
   });
 
+  this.child = this.el;
   this.firstRender = true;
   this.hasFeature = null;
   this.scrollHandler = null;
@@ -60,51 +75,55 @@ var Sticky = function(element, options) {
   this.updateDom = this.updateDom.bind(this);
   this.render = (this.state.useAnimationFrame && window && window.requestAnimationFrame) ? this.renderOnAnimationFrame.bind(this) : this.updateDom;
 
-  if (this.state.top !== 0) {
-    this.addSrollHandler();
-  }
+  this.addSrollHandler();
   this.addResizeHandler();
   this.render();
 };
 
-Sticky.prototype.updateState = function(values, silent) {
+StickyState.prototype.updateState = function(values, silent) {
   this.state = assign({},this.state, values);
   if (!silent) {
     this.render();
   }
 };
 
-Sticky.prototype.getTop = function() {
+StickyState.prototype.getTop = function() {
   var top = this.options.top;
   if (top === null) {
-    top = parseInt(window.getComputedStyle(this.el).top);
+    top = getAbsolutPosition(this.el).top - parseInt(window.getComputedStyle(this.el).top);
   }
   return top;
 };
 
-Sticky.prototype.updateHeight = function(silent) {
+StickyState.prototype.getBottom = function() {
+  var bottom = this.options.bottom;
+  if (bottom === null) {
+    bottom = getAbsolutPosition(this.el).bottom - parseInt(window.getComputedStyle(this.el).bottom);
+  }
+  return bottom;
+};
+
+
+StickyState.prototype.updateHeight = function(silent) {
   silent = silent === true ? true : false;
-  var height = this.el.clientHeight;
+  var height = parseInt(this.el.getBoundingClientRect().height);
   if (height !== this.state.height) {
     this.updateState({height: height}, silent);
   }
   return this.state.height;
 };
 
-Sticky.prototype.updateTop = function(silent) {
+StickyState.prototype.updateBounds = function(silent) {
   silent = silent === true ? true : false;
 
   var top = this.getTop();
   if (top !== this.state.top) {
-    if (top !== 0) {
-      this.addSrollHandler();
-    }
-    this.updateState({top: top}, silent);
+    this.updateState({top: top, restrict: getAbsolutPosition(this.child.parentNode)}, silent);
   }
   return this.state.top;
 };
 
-Sticky.prototype.canSticky = function() {
+StickyState.prototype.canSticky = function() {
   if (this.hasFeature !== null) {
     return this.hasFeature;
   }
@@ -112,7 +131,7 @@ Sticky.prototype.canSticky = function() {
   //return canSticky(this.options.className);
 };
 
-Sticky.prototype.addSrollHandler = function() {
+StickyState.prototype.addSrollHandler = function() {
   if (!this.scrollHandler) {
     this.fastScroll = this.fastScroll || getFastScroll();
     this.scrollHandler = this.updateStickyState.bind(this);
@@ -122,7 +141,7 @@ Sticky.prototype.addSrollHandler = function() {
   }
 };
 
-Sticky.prototype.removeSrollHandler = function() {
+StickyState.prototype.removeSrollHandler = function() {
   if (this.fastScroll) {
     this.fastScroll.off('scroll:start', this.scrollHandler);
     this.fastScroll.off('scroll:progress', this.scrollHandler);
@@ -133,7 +152,7 @@ Sticky.prototype.removeSrollHandler = function() {
   }
 };
 
-Sticky.prototype.addResizeHandler = function() {
+StickyState.prototype.addResizeHandler = function() {
   if (!this.resizeHandler) {
     this.resizeHandler = this.onResize.bind(this);
     window.addEventListener('resize', this.resizeHandler, false);
@@ -141,7 +160,7 @@ Sticky.prototype.addResizeHandler = function() {
   }
 };
 
-Sticky.prototype.removeResizeHandler = function() {
+StickyState.prototype.removeResizeHandler = function() {
   if (this.resizeHandler) {
     window.removeEventListener('resize', this.resizeHandler);
     window.removeEventListener('orientationchange', this.resizeHandler);
@@ -149,7 +168,7 @@ Sticky.prototype.removeResizeHandler = function() {
   }
 };
 
-Sticky.prototype.onResize = function(e) {
+StickyState.prototype.onResize = function(e) {
   var height = this.state.height;
   var top = this.getTop();
   if (!this.canSticky()) {
@@ -165,45 +184,43 @@ Sticky.prototype.onResize = function(e) {
   }
 };
 
-Sticky.prototype.updateStickyState = function(silent) {
+StickyState.prototype.updateStickyState = function(silent) {
 
-  var child = this.canSticky() ? this.el : this.wrapper;
+  var child = this.child;
   if (!child) {
     return false;
   }
 
+
   silent = silent === true ? true : false;
   var top = this.state.top;
 
-  if (top === 0) {
-    if (this.state.sticky === false) {
-      this.updateState({
-        sticky: true,
-        height: parseInt(this.el.clientHeight)
-      }, silent);
-    }
+  if (isNaN(top)) {
     return;
   }
 
-  var scrollY = -this.fastScroll.scrollY;
-  if (this.state.sticky === false && scrollY <= top) {
+
+  var scrollY = this.fastScroll.scrollY;
+  var offsetBottom = this.state.restrict.bottom - this.state.height;
+
+  if (this.state.sticky === false && scrollY >= top && scrollY <= offsetBottom ) {
     this.updateState({
       sticky: true,
-      height: parseInt(child.clientHeight)
+      height: parseInt(this.el.clientHeight)
     }, silent);
-  } else if (this.state.sticky && scrollY > top) {
+  } else if (this.state.sticky && (scrollY < top || scrollY > offsetBottom)) {
     this.updateState({
       sticky: false,
-      height: 'auto'
+      height: parseInt(this.el.clientHeight)
     }, silent);
   }
 };
 
-Sticky.prototype.renderOnAnimationFrame = function() {
+StickyState.prototype.renderOnAnimationFrame = function() {
   window.requestAnimationFrame(this.updateDom);
 };
 
-Sticky.prototype.updateDom = function() {
+StickyState.prototype.updateDom = function() {
 
   if (this.firstRender) {
     this.firstRender = false;
@@ -217,16 +234,21 @@ Sticky.prototype.updateDom = function() {
       }
       this.wrapper.appendChild(this.el);
       this.el.className += ' sticky-fixed';
+      this.child = this.wrapper;
     }
 
-    this.updateTop(true);
+    this.updateBounds(true);
     this.updateHeight(true);
     this.updateStickyState(true);
+
+  }
+  if (isNaN(this.state.top)) {
+    return;
   }
 
   if (!this.canSticky()) {
     var height = this.state.height;
-    height = height === 'auto' ? height : height + 'px';
+    height = (this.state.sticky || height === null) ? 'auto' : height + 'px';
     this.wrapper.style.height = height;
   }
 
@@ -245,4 +267,16 @@ Sticky.prototype.updateDom = function() {
   return this.el;
 };
 
-module.exports = Sticky;
+StickyState.apply = function(elements) {
+  if (elements) {
+    if (elements.length) {
+      for (var i = 0; i < elements.length; i++) {
+        new StickyState(elements[i]);
+      }
+    }else {
+      new StickyState(elements);
+    }
+  }
+};
+
+module.exports = StickyState;
