@@ -13,19 +13,17 @@ body {
 }
 /* Logo */
 .header {
-  background: #247201 url(http://filamentgroup.com/images/headerbg-new.jpg) no-repeat bottom left;
+  background: #247201;
 }
 #fg-logo {
   text-indent: -9999px;
   margin: 0 auto;
   width: 287px;
   height: 52px;
-  background-image: url(http://filamentgroup.com/images/fg-logo-icon.png);
 }
 @media (-webkit-min-device-pixel-ratio: 1.5), (min-device-pixel-ratio: 1.5){
   #fg-logo {
     background-size: 287px 52px;
-    background-image: url(http://filamentgroup.com/images/fg-logo-icon-lrg.png);
   }
 }
 /* Demo CSS */
@@ -33,7 +31,7 @@ body {
   font-family: sans-serif;
   color: #444;
   margin: 0 auto;
-  padding: 0 2%;
+  padding: 0 30px;
   max-width: 600px;
 }
 
@@ -44,17 +42,18 @@ body {
   border-width: 1px 0;
   padding: 1em;
   width: 100%;
-  max-width: 600px;
+  max-width: 540px;
   -moz-box-sizing: border-box;
   -webkit-box-sizing: border-box;
   box-sizing: border-box;
 }
-.top.fixedsticky-on,
-.bottom.fixedsticky-on {
-  width: 96%;
+.top.is-sticky::after{
+  content: " << is-sticky >>";
+}
+.bottom.is-sticky::after{
+  content: " << is-sticky >>";
 }
 
-/* Fixed-Sticky CSS */
 .top {
   top: 0;
 }

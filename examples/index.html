@@ -4,19 +4,16 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>Fixed Sticky</title>
+    <title>StickyState</title>
     <link rel="stylesheet" href="../style.css">
     <link rel="stylesheet" href="main.css">
     <script src="../dist/stickystate.js"></script>
   </head>
   <body>
-    <div class="header">
-      <a href="http://filamentgroup.com/"><h1 id="fg-logo">Filament Group</h1></a>
-    </div>
 
-    <h2>Fixed-sticky</h2>
+    <h2>StickyState</h2>
 
-    <p>A test page for the <a href="https://github.com/filamentgroup/fixed-sticky">Fixed-sticky project</a></p>
+    <p>A test page for the <a href="https://github.com/soenkekluth/sticky-state">StickyState project</a></p>
 
     <div class="container" style="height: 600px; padding-top: 100px;">
       <div class="top sticky" id="top-a">
@@ -24,7 +21,7 @@
       </div>
     </div>
 
-    <p>This test page includes a test to qualify the application of CSS <code>position:sticky</code>, which enjoys limited browser support. It works with the <a href="https://github.com/filamentgroup/fixed-fixed">Fixed-fixed project</a> (as of v0.1.2 of fixed-fixed).</p>
+    <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Fuga ut, maxime reiciendis ab pariatur eaque, suscipit esse tempora nesciunt atque assumenda a, consequatur ex et illo qui accusamus facere quis ipsam tenetur. Eaque molestias quo laudantium odio! Velit nobis, consequatur.</p>
 
     <div class="top sticky" id="top-b">
       Fixed to viewport top B.
@@ -81,10 +78,10 @@
 
     <h2>Sticky with overflow</h2>
 
-    <p>The following demo does not behave the same in the plugin as it does with native sticky. We do not support overflow on parent elements in fixed-sticky.</p>
+    <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Sint quaerat excepturi, amet. Corporis pariatur illum ab, ea placeat delectus impedit.</p>
 
     <div class="container" style="height: 600px; overflow: auto;">
-      <div class="top sticky" style="top: 3.2em;">
+      <div class="top sticky sticky-overflow" style="top: 3.2em;">
         Fixed to overflow div top.
       </div>
       <div style="height: 1000px"></div>
@@ -138,8 +135,9 @@
     </ol>
 
     <script>
-      // StickyState.apply(document.querySelectorAll('.sticky'))
-      StickyState.apply(document.querySelector('#top-a'))
+      StickyState.apply(document.querySelectorAll('.sticky'));
+      // var overflowElem = document.querySelector('.sticky-overflow');
+      // new StickyState(overflowElem,{scrollTarget:overflowElem.parentNode} );
     </script>
 
   </body>

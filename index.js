@@ -6,27 +6,46 @@ var _globals = {
 };
 
 var defaults = {
-  top: null,
-  bottom: null,
+  scrollTarget: null,
   disabled: false,
-  restrict: null,
   className: 'sticky',
   useAnimationFrame: false,
   stateclassName: 'is-sticky'
 };
 
 
-function getAbsolutPosition(el) {
+function getSrollPosition(){
+  return (window.scrollY || window.pageYOffset || 0);
+}
+
+function getAbsolutBoundingRect(el) {
   var rect = el.getBoundingClientRect();
-  var scrollPos = (window.scrollY || window.pageYOffset || 0);
+  var scrollPos = getSrollPosition();
   var top = rect.top + scrollPos;
   return {
-      top: top,
-      bottom: top + rect.height,
-      height: rect.height,
-      width: rect.width
-    };
-};
+    top: top,
+    bottom: top + rect.height,
+    height: rect.height,
+    width: rect.width
+  };
+}
+
+
+function addBounds(rect1, rect2){
+  var rect = assign({}, rect1);
+  rect.top -= rect2.top;
+  rect.bottom = rect.top + rect1.height;
+  return rect;
+}
+
+
+function getPreviousElementSibling(el) {
+  var prev = el.previousElementSibling;
+  if(prev && prev.tagName.toLocaleLowerCase() === 'script'){
+    prev = getPreviousElementSibling(prev);
+  }
+  return prev;
+}
 
 function canSticky(stickyClass) {
   if (_globals.featureTested) {
@@ -44,11 +63,14 @@ function canSticky(stickyClass) {
   return _globals.canSticky;
 }
 
-function getFastScroll() {
-  if (!_globals.fastScroll) {
-    _globals.fastScroll = new FastScroll();
+function getFastScroll(scrollTarget) {
+  if(!scrollTarget){
+    scrollTarget = window;
   }
-  return _globals.fastScroll;
+  if (!_globals[scrollTarget]) {
+    _globals[scrollTarget] = new FastScroll({el:scrollTarget});
+  }
+  return _globals[scrollTarget];
 }
 
 var StickyState = function(element, options) {
@@ -57,12 +79,22 @@ var StickyState = function(element, options) {
     return;
   }
   this.el = element;
-  this.options = assign({}, defaults, options);
+  this.options = assign({}, defaults, {scrollTarget:window}, options);
 
-  this.state = assign({}, this.options, {
+  this.state = {
     sticky: false,
-    height: null
-  });
+    bounds: {
+      top: null,
+      bottom: null,
+      height: null,
+      width: null
+    },
+    restrict: null,
+    style: {
+      top: null,
+      bottom: null
+    }
+  };
 
   this.child = this.el;
   this.firstRender = true;
@@ -81,46 +113,76 @@ var StickyState = function(element, options) {
 };
 
 StickyState.prototype.updateState = function(values, silent) {
-  this.state = assign({},this.state, values);
+  silent = silent === true ? true : false;
+  this.state = assign({}, this.state, values);
   if (!silent) {
     this.render();
   }
 };
 
-StickyState.prototype.getTop = function() {
-  var top = this.options.top;
-  if (top === null) {
-    top = getAbsolutPosition(this.el).top - parseInt(window.getComputedStyle(this.el).top);
+StickyState.prototype.getPositionStyle = function() {
+
+  var obj = {
+    top: null,
+    bottom: null
+  };
+
+  for (var key in obj) {
+    value = parseInt(window.getComputedStyle(this.el)[key]);
+    value = isNaN(value) ? null : value;
+    obj[key] = value;
   }
-  return top;
+
+  return obj;
 };
 
-StickyState.prototype.getBottom = function() {
-  var bottom = this.options.bottom;
-  if (bottom === null) {
-    bottom = getAbsolutPosition(this.el).bottom - parseInt(window.getComputedStyle(this.el).bottom);
-  }
-  return bottom;
-};
-
-
-StickyState.prototype.updateHeight = function(silent) {
-  silent = silent === true ? true : false;
-  var height = parseInt(this.el.getBoundingClientRect().height);
-  if (height !== this.state.height) {
-    this.updateState({height: height}, silent);
-  }
-  return this.state.height;
-};
 
 StickyState.prototype.updateBounds = function(silent) {
   silent = silent === true ? true : false;
 
-  var top = this.getTop();
-  if (top !== this.state.top) {
-    this.updateState({top: top, restrict: getAbsolutPosition(this.child.parentNode)}, silent);
+  var style = this.getPositionStyle();
+  var rect;
+
+  if(!this.canSticky()){
+    rect = getAbsolutBoundingRect(this.child);
+    if(this.options.scrollTarget !== window){
+      rect = addBounds(rect, getAbsolutBoundingRect(this.options.scrollTarget));
+    }
+  }else{
+    var elem = getPreviousElementSibling(this.child);
+    var offset = 0;
+
+    if(elem){
+      offset = parseInt(window.getComputedStyle(elem)['margin-bottom']);
+      offset = offset || 0;
+      rect = getAbsolutBoundingRect(elem);
+      if(this.options.scrollTarget !== window){
+       rect = addBounds(rect, getAbsolutBoundingRect(this.options.scrollTarget));
+      }
+
+      rect.top  = rect.bottom + offset;
+
+    }else{
+      elem = this.child.parentNode;
+      offset = parseInt(window.getComputedStyle(elem)['padding-top']);
+      offset = offset || 0;
+      rect = getAbsolutBoundingRect(elem);
+      if(this.options.scrollTarget !== window){
+       rect = addBounds(rect, getAbsolutBoundingRect(this.options.scrollTarget));
+      }
+      rect.top =  rect.top +  offset;
+    }
+
+    rect.height = this.child.clientHeight;
+    rect.width = this.child.clientWidth;
+    rect.bottom = rect.top + rect.height;
   }
-  return this.state.top;
+
+  this.updateState({
+    style: style,
+    bounds: rect,
+    restrict: getAbsolutBoundingRect(this.child.parentNode)
+  }, silent);
 };
 
 StickyState.prototype.canSticky = function() {
@@ -128,12 +190,11 @@ StickyState.prototype.canSticky = function() {
     return this.hasFeature;
   }
   return this.hasFeature = window.getComputedStyle(this.el).position.match('sticky');
-  //return canSticky(this.options.className);
 };
 
 StickyState.prototype.addSrollHandler = function() {
   if (!this.scrollHandler) {
-    this.fastScroll = this.fastScroll || getFastScroll();
+    this.fastScroll = this.fastScroll || getFastScroll(this.options.scrollTarget);
     this.scrollHandler = this.updateStickyState.bind(this);
     this.fastScroll.on('scroll:start', this.scrollHandler);
     this.fastScroll.on('scroll:progress', this.scrollHandler);
@@ -169,51 +230,53 @@ StickyState.prototype.removeResizeHandler = function() {
 };
 
 StickyState.prototype.onResize = function(e) {
-  var height = this.state.height;
-  var top = this.getTop();
-  if (!this.canSticky()) {
-    height = parseInt(this.el.getBoundingClientRect().height);
-  }
-  if (height !== this.state.height || top !== this.state.top) {
-    this.updateState({
-      top: top,
-      height: height
-    });
-
-    this.updateStickyState(false);
-  }
+  this.updateBounds(true);
+  this.updateStickyState(false);
 };
 
 StickyState.prototype.updateStickyState = function(silent) {
 
   var child = this.child;
-  if (!child) {
-    return false;
-  }
-
 
   silent = silent === true ? true : false;
-  var top = this.state.top;
+  var scrollY = this.fastScroll.scrollY;
 
-  if (isNaN(top)) {
+  var top = this.state.style.top;
+
+  if (top !== null) {
+    var offsetBottom = this.state.restrict.bottom - this.state.bounds.height - top;
+    top = this.state.bounds.top - top;
+
+    if (this.state.sticky === false && scrollY >= top && scrollY <= offsetBottom) {
+      this.updateState({
+        sticky: true
+      }, silent);
+    } else if (this.state.sticky && (scrollY < top || scrollY > offsetBottom)) {
+      this.updateState({
+        sticky: false
+      }, silent);
+    }
+
     return;
   }
 
+  scrollY += window.innerHeight;
+  var bottom = this.state.style.bottom;
+  if (bottom !== null) {
+    var offsetBottom = this.state.restrict.top + this.state.bounds.height - bottom;
+    bottom = this.state.bounds.bottom + bottom;
 
-  var scrollY = this.fastScroll.scrollY;
-  var offsetBottom = this.state.restrict.bottom - this.state.height;
-
-  if (this.state.sticky === false && scrollY >= top && scrollY <= offsetBottom ) {
-    this.updateState({
-      sticky: true,
-      height: parseInt(this.el.clientHeight)
-    }, silent);
-  } else if (this.state.sticky && (scrollY < top || scrollY > offsetBottom)) {
-    this.updateState({
-      sticky: false,
-      height: parseInt(this.el.clientHeight)
-    }, silent);
+    if (this.state.sticky === false && scrollY <= bottom && scrollY >= offsetBottom) {
+      this.updateState({
+        sticky: true
+      }, silent);
+    } else if (this.state.sticky && (scrollY > bottom || scrollY < offsetBottom)) {
+      this.updateState({
+        sticky: false
+      }, silent);
+    }
   }
+
 };
 
 StickyState.prototype.renderOnAnimationFrame = function() {
@@ -238,17 +301,13 @@ StickyState.prototype.updateDom = function() {
     }
 
     this.updateBounds(true);
-    this.updateHeight(true);
     this.updateStickyState(true);
 
   }
-  if (isNaN(this.state.top)) {
-    return;
-  }
 
   if (!this.canSticky()) {
-    var height = this.state.height;
-    height = (this.state.sticky || height === null) ? 'auto' : height + 'px';
+    var height = this.state.bounds.height;
+    height = (!this.state.sticky || height === null) ? 'auto' : height + 'px';
     this.wrapper.style.height = height;
   }
 
@@ -273,7 +332,7 @@ StickyState.apply = function(elements) {
       for (var i = 0; i < elements.length; i++) {
         new StickyState(elements[i]);
       }
-    }else {
+    } else {
       new StickyState(elements);
     }
   }
