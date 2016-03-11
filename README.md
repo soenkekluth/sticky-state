@@ -1,7 +1,10 @@
 #StickyState
 
 StickyState ads state to position:sticky elements and also polyfills the missing native sticky feature.
-StickyState is high perfomant. all attributes needed to calculate the position and determine the state of the DOM element are persistant. only updated on resize or if you force them to.
+
+todays browser do not all support the position:sticky feature (which by the way is beeing used (polyfilled) on pretty much every site you visit) - moreover the native supported feature itself comes without a readable state. something like a:hover => div:sticky to add different styles to the element in its sticky state - or to read the state if needed in javacript. 
+
+unlike almost all polyfills you can find in the wild StickyState is high perfomant. the calculations are reduced to a minimum by persisting several attributes.
 
 ###install
 ```
