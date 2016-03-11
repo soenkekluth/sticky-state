@@ -1,0 +1,7 @@
+# OS or Editor folders
+.DS_Store
+*.sublime-workspace
+npm-debug.log
+
+# Project folders to ignore
+node_modules
