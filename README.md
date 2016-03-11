@@ -29,4 +29,7 @@ your css should contain the following lines:
 ```javascript
 var StickyState = require('sticky-state');
 new StickyState(yourElement, yourOptions);
+// or
+StickyState.apply(document.querySelectorAll('.sticky'));
+// for example
 ```
