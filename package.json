@@ -1,6 +1,6 @@
 {
   "name": "sticky-state",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "sticky-state adds state to sticky elements and polyfills the missing sticky feature",
   "main": "index.js",
   "scripts": {
