@@ -1,0 +1,9 @@
+.sticky {
+  position: sticky;
+  top: 0;
+}
+
+.sticky.sticky-fixed.is-sticky {
+  position: fixed;
+  backface-visibility: hidden;
+}
