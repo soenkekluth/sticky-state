@@ -3,7 +3,11 @@
 StickyState ads state to position:sticky elements and also polyfills the missing native sticky feature.
 StickyState is high perfomant. all attributes needed to calculate the position and determine the state of the DOM element are persistant. only updated on resize or if you force them to.
 
-## demo
+###install
+```
+npm install sticky-state
+```
+### demo
 https://rawgit.com/soenkekluth/sticky-state/master/examples/index.html
 
 ###css
