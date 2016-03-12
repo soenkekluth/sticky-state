@@ -6,6 +6,9 @@ todays browser do not all support the position:sticky feature (which by the way 
 
 unlike almost all polyfills you can find in the wild StickyState is high perfomant. the calculations are reduced to a minimum by persisting several attributes.
 
+###Dependencies
+none!
+
 ###Browser support
 IE >= 10, *
 
