@@ -44,21 +44,7 @@ function getPreviousElementSibling(el) {
   return prev;
 }
 
-function canSticky(stickyClass) {
-  if (_globals.featureTested) {
-    return _globals.canSticky;
-  }
-  if (typeof window !== 'undefined') {
-    stickyClass = stickyClass || defaults.className;
-    var testEl = document.createElement('div');
-    testEl.className = stickyClass;
-    document.documentElement.appendChild(testEl);
-    _globals.canSticky = window.getComputedStyle(testEl).position.match('sticky');
-    _globals.featureTested = true;
-    document.documentElement.removeChild(testEl);
-  }
-  return _globals.canSticky;
-}
+
 
 function getFastScroll(scrollTarget) {
   if (!scrollTarget) {
@@ -320,6 +306,31 @@ StickyState.prototype.updateDom = function() {
   }
 
   return this.el;
+};
+
+
+StickyState.native = function() {
+  if (_globals.featureTested) {
+    return _globals.canSticky;
+  }
+  if (typeof window !== 'undefined') {
+    var testEl = document.createElement('div');
+    document.documentElement.appendChild(testEl);
+    var prefixedSticky = ['sticky', '-webkit-sticky', '-moz-sticky', '-ms-sticky', '-o-sticky'];
+
+    _globals.canSticky = false;
+
+    for(var i = 0; i < prefixedSticky.length; i++) {
+      testEl.style.position = prefixedSticky[i];
+      _globals.canSticky = !!window.getComputedStyle(testEl).position.match('sticky');
+      if(_globals.canSticky){
+        break;
+      }
+    }
+    _globals.featureTested = true;
+    document.documentElement.removeChild(testEl);
+  }
+  return _globals.canSticky;
 };
 
 StickyState.apply = function(elements) {
