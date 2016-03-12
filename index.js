@@ -10,7 +10,7 @@ var defaults = {
   disabled: false,
   className: 'sticky',
   useAnimationFrame: false,
-  stateclassName: 'is-sticky'
+  stateClassName: 'is-sticky'
 };
 
 function getSrollPosition() {
@@ -294,11 +294,11 @@ StickyState.prototype.updateDom = function() {
   }
 
   var className = this.el.className;
-  var hasStateClass = className.indexOf(this.options.stateclassName) > -1;
+  var hasStateClass = className.indexOf(this.options.stateClassName) > -1;
   if (this.state.sticky && !hasStateClass) {
-    className = className + ' ' + this.options.stateclassName;
+    className = className + ' ' + this.options.stateClassName;
   } else if (!this.state.sticky && hasStateClass) {
-    className = className.split(this.options.stateclassName).join('');
+    className = className.split(this.options.stateClassName).join('');
   }
 
   if (this.el.className !== className) {
