@@ -48,7 +48,7 @@ function canSticky(stickyClass) {
   if (_globals.featureTested) {
     return _globals.canSticky;
   }
-  if (window) {
+  if (typeof window !== 'undefined') {
     stickyClass = stickyClass || defaults.className;
     var testEl = document.createElement('div');
     testEl.className = stickyClass;
@@ -73,8 +73,8 @@ function getFastScroll(scrollTarget) {
 var StickyState = function(element, options) {
   if (!element) {
     throw new Error('StickyState needs a DomElement');
-    return;
   }
+
   this.el = element;
   this.options = assign({}, defaults, {scrollTarget: window}, options);
 
@@ -238,9 +238,10 @@ StickyState.prototype.updateStickyState = function(silent) {
   var scrollY = this.fastScroll.scrollY;
 
   var top = this.state.style.top;
+  var offsetBottom;
 
   if (top !== null) {
-    var offsetBottom = this.state.restrict.bottom - this.state.bounds.height - top;
+    offsetBottom = this.state.restrict.bottom - this.state.bounds.height - top;
     top = this.state.bounds.top - top;
 
     if (this.state.sticky === false && scrollY >= top && scrollY <= offsetBottom) {
@@ -259,7 +260,7 @@ StickyState.prototype.updateStickyState = function(silent) {
   scrollY += window.innerHeight;
   var bottom = this.state.style.bottom;
   if (bottom !== null) {
-    var offsetBottom = this.state.restrict.top + this.state.bounds.height - bottom;
+    offsetBottom = this.state.restrict.top + this.state.bounds.height - bottom;
     bottom = this.state.bounds.bottom + bottom;
 
     if (this.state.sticky === false && scrollY <= bottom && scrollY >= offsetBottom) {
@@ -298,7 +299,6 @@ StickyState.prototype.updateDom = function() {
 
     this.updateBounds(true);
     this.updateStickyState(true);
-
   }
 
   if (!this.canSticky()) {
