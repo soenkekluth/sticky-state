@@ -82,7 +82,7 @@ var StickyState = function(element, options) {
   };
 
   this.child = this.el;
-  this.scrollTarget = window;//window.getComputedStyle(this.el.parentNode).overflow !== 'auto' ? window :  this.el.parentNode;
+  this.scrollTarget = StickyState.native() ? (window.getComputedStyle(this.el.parentNode).overflow !== 'auto' ? window :  this.el.parentNode) : window;
   this.hasOwnScrollTarget = this.scrollTarget !== window;
   this.firstRender = true;
   this.hasFeature = null;
