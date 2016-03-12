@@ -6,7 +6,6 @@ var _globals = {
 };
 
 var defaults = {
-  scrollTarget: null,
   disabled: false,
   className: 'sticky',
   useAnimationFrame: false,
@@ -19,8 +18,7 @@ function getSrollPosition() {
 
 function getAbsolutBoundingRect(el) {
   var rect = el.getBoundingClientRect();
-  var scrollPos = getSrollPosition();
-  var top = rect.top + scrollPos;
+  var top = rect.top + getSrollPosition();
   return {
     top: top,
     bottom: top + rect.height,
@@ -62,10 +60,14 @@ var StickyState = function(element, options) {
   }
 
   this.el = element;
-  this.options = assign({}, defaults, {scrollTarget: window}, options);
+  this.options = assign({}, defaults, options);
 
   this.state = {
     sticky: false,
+    fixedOffset:{
+      top: 0,
+      bottom: 0
+    },
     bounds: {
       top: null,
       bottom: null,
@@ -80,6 +82,8 @@ var StickyState = function(element, options) {
   };
 
   this.child = this.el;
+  this.scrollTarget = window;//window.getComputedStyle(this.el.parentNode).overflow !== 'auto' ? window :  this.el.parentNode;
+  this.hasOwnScrollTarget = this.scrollTarget !== window;
   this.firstRender = true;
   this.hasFeature = null;
   this.scrollHandler = null;
@@ -124,11 +128,16 @@ StickyState.prototype.updateBounds = function(silent) {
 
   var style = this.getPositionStyle();
   var rect;
+  var restrict;
 
   if (!this.canSticky()) {
     rect = getAbsolutBoundingRect(this.child);
-    if (this.options.scrollTarget !== window) {
-      rect = addBounds(rect, getAbsolutBoundingRect(this.options.scrollTarget));
+    if (this.hasOwnScrollTarget) {
+      var parentRect = getAbsolutBoundingRect(this.scrollTarget);
+      this.state.fixedOffset.top = parentRect.top;
+      this.state.fixedOffset.bottom = parentRect.bottom;
+      rect = addBounds(rect, parentRect);
+      restrict = rect;//getAbsolutBoundingRect(this.child.parentNode);
     }
   }else {
     var elem = getPreviousElementSibling(this.child);
@@ -138,8 +147,8 @@ StickyState.prototype.updateBounds = function(silent) {
       offset = parseInt(window.getComputedStyle(elem)['margin-bottom']);
       offset = offset || 0;
       rect = getAbsolutBoundingRect(elem);
-      if (this.options.scrollTarget !== window) {
-        rect = addBounds(rect, getAbsolutBoundingRect(this.options.scrollTarget));
+      if (this.hasOwnScrollTarget) {
+        rect = addBounds(rect, getAbsolutBoundingRect(this.scrollTarget));
       }
 
       rect.top  = rect.bottom + offset;
@@ -149,8 +158,8 @@ StickyState.prototype.updateBounds = function(silent) {
       offset = parseInt(window.getComputedStyle(elem)['padding-top']);
       offset = offset || 0;
       rect = getAbsolutBoundingRect(elem);
-      if (this.options.scrollTarget !== window) {
-        rect = addBounds(rect, getAbsolutBoundingRect(this.options.scrollTarget));
+      if (this.hasOwnScrollTarget) {
+        rect = addBounds(rect, getAbsolutBoundingRect(this.scrollTarget));
       }
       rect.top =  rect.top +  offset;
     }
@@ -160,10 +169,12 @@ StickyState.prototype.updateBounds = function(silent) {
     rect.bottom = rect.top + rect.height;
   }
 
+  restrict = restrict || getAbsolutBoundingRect(this.child.parentNode);
+
   this.updateState({
     style: style,
     bounds: rect,
-    restrict: getAbsolutBoundingRect(this.child.parentNode)
+    restrict:restrict
   }, silent);
 };
 
@@ -176,7 +187,7 @@ StickyState.prototype.canSticky = function() {
 
 StickyState.prototype.addSrollHandler = function() {
   if (!this.scrollHandler) {
-    this.fastScroll = this.fastScroll || getFastScroll(this.options.scrollTarget);
+    this.fastScroll = getFastScroll(this.scrollTarget);
     this.scrollHandler = this.updateStickyState.bind(this);
     this.fastScroll.on('scroll:start', this.scrollHandler);
     this.fastScroll.on('scroll:progress', this.scrollHandler);
@@ -225,6 +236,7 @@ StickyState.prototype.updateStickyState = function(silent) {
 
   var top = this.state.style.top;
   var offsetBottom;
+
 
   if (top !== null) {
     offsetBottom = this.state.restrict.bottom - this.state.bounds.height - top;
@@ -290,6 +302,11 @@ StickyState.prototype.updateDom = function() {
   if (!this.canSticky()) {
     var height = this.state.bounds.height;
     height = (!this.state.sticky || height === null) ? 'auto' : height + 'px';
+
+    // if(this.state.sticky && this.state.fixedOffset.top !== 0){
+    //   this.el.style.marginTop = this.state.fixedOffset.top+'px';
+    // }
+
     this.wrapper.style.height = height;
   }
 
