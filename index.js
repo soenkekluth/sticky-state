@@ -113,7 +113,7 @@ var StickyState = function(element, options) {
 };
 
 StickyState.prototype.updateState = function(values, silent) {
-  silent = silent === true ? true : false;
+  silent = silent === true;
   this.state = assign({}, this.state, values);
   if (!silent) {
     this.render();
@@ -138,7 +138,7 @@ StickyState.prototype.getPositionStyle = function() {
 
 
 StickyState.prototype.updateBounds = function(silent) {
-  silent = silent === true ? true : false;
+  silent = silent === true;
 
   var style = this.getPositionStyle();
   var rect;
@@ -238,7 +238,7 @@ StickyState.prototype.updateStickyState = function(silent) {
 
   var child = this.child;
 
-  silent = silent === true ? true : false;
+  silent = silent === true;
   var scrollY = this.fastScroll.scrollY;
 
   var top = this.state.style.top;
