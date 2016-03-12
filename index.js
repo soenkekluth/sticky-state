@@ -13,8 +13,7 @@ var defaults = {
   stateclassName: 'is-sticky'
 };
 
-
-function getSrollPosition(){
+function getSrollPosition() {
   return (window.scrollY || window.pageYOffset || 0);
 }
 
@@ -30,18 +29,16 @@ function getAbsolutBoundingRect(el) {
   };
 }
 
-
-function addBounds(rect1, rect2){
+function addBounds(rect1, rect2) {
   var rect = assign({}, rect1);
   rect.top -= rect2.top;
   rect.bottom = rect.top + rect1.height;
   return rect;
 }
 
-
 function getPreviousElementSibling(el) {
   var prev = el.previousElementSibling;
-  if(prev && prev.tagName.toLocaleLowerCase() === 'script'){
+  if (prev && prev.tagName.toLocaleLowerCase() === 'script') {
     prev = getPreviousElementSibling(prev);
   }
   return prev;
@@ -64,11 +61,11 @@ function canSticky(stickyClass) {
 }
 
 function getFastScroll(scrollTarget) {
-  if(!scrollTarget){
+  if (!scrollTarget) {
     scrollTarget = window;
   }
   if (!_globals[scrollTarget]) {
-    _globals[scrollTarget] = new FastScroll({el:scrollTarget});
+    _globals[scrollTarget] = new FastScroll({el: scrollTarget});
   }
   return _globals[scrollTarget];
 }
@@ -79,7 +76,7 @@ var StickyState = function(element, options) {
     return;
   }
   this.el = element;
-  this.options = assign({}, defaults, {scrollTarget:window}, options);
+  this.options = assign({}, defaults, {scrollTarget: window}, options);
 
   this.state = {
     sticky: false,
@@ -128,7 +125,7 @@ StickyState.prototype.getPositionStyle = function() {
   };
 
   for (var key in obj) {
-    value = parseInt(window.getComputedStyle(this.el)[key]);
+    var value = parseInt(window.getComputedStyle(this.el)[key]);
     value = isNaN(value) ? null : value;
     obj[key] = value;
   }
@@ -136,39 +133,38 @@ StickyState.prototype.getPositionStyle = function() {
   return obj;
 };
 
-
 StickyState.prototype.updateBounds = function(silent) {
   silent = silent === true;
 
   var style = this.getPositionStyle();
   var rect;
 
-  if(!this.canSticky()){
+  if (!this.canSticky()) {
     rect = getAbsolutBoundingRect(this.child);
-    if(this.options.scrollTarget !== window){
+    if (this.options.scrollTarget !== window) {
       rect = addBounds(rect, getAbsolutBoundingRect(this.options.scrollTarget));
     }
-  }else{
+  }else {
     var elem = getPreviousElementSibling(this.child);
     var offset = 0;
 
-    if(elem){
+    if (elem) {
       offset = parseInt(window.getComputedStyle(elem)['margin-bottom']);
       offset = offset || 0;
       rect = getAbsolutBoundingRect(elem);
-      if(this.options.scrollTarget !== window){
-       rect = addBounds(rect, getAbsolutBoundingRect(this.options.scrollTarget));
+      if (this.options.scrollTarget !== window) {
+        rect = addBounds(rect, getAbsolutBoundingRect(this.options.scrollTarget));
       }
 
       rect.top  = rect.bottom + offset;
 
-    }else{
+    }else {
       elem = this.child.parentNode;
       offset = parseInt(window.getComputedStyle(elem)['padding-top']);
       offset = offset || 0;
       rect = getAbsolutBoundingRect(elem);
-      if(this.options.scrollTarget !== window){
-       rect = addBounds(rect, getAbsolutBoundingRect(this.options.scrollTarget));
+      if (this.options.scrollTarget !== window) {
+        rect = addBounds(rect, getAbsolutBoundingRect(this.options.scrollTarget));
       }
       rect.top =  rect.top +  offset;
     }
