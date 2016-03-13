@@ -320,6 +320,13 @@ StickyState.native = function() {
     return _globals.canSticky;
   }
   if (typeof window !== 'undefined') {
+
+    _globals.featureTested = true;
+
+    if(window.Modernizr && window.Modernizr.hasOwnProperty('csspositionsticky')) {
+      return  _globals.canSticky = window.Modernizr.csspositionsticky;
+    }
+
     var testEl = document.createElement('div');
     document.documentElement.appendChild(testEl);
     var prefixedSticky = ['sticky', '-webkit-sticky', '-moz-sticky', '-ms-sticky', '-o-sticky'];
@@ -333,7 +340,6 @@ StickyState.native = function() {
         break;
       }
     }
-    _globals.featureTested = true;
     document.documentElement.removeChild(testEl);
   }
   return _globals.canSticky;
