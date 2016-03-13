@@ -43,17 +43,6 @@ function getPreviousElementSibling(el) {
 }
 
 
-
-function getFastScroll(scrollTarget) {
-  if (!scrollTarget) {
-    scrollTarget = window;
-  }
-  if (!_globals[scrollTarget]) {
-    _globals[scrollTarget] = new FastScroll({el: scrollTarget});
-  }
-  return _globals[scrollTarget];
-}
-
 var StickyState = function(element, options) {
   if (!element) {
     throw new Error('StickyState needs a DomElement');
@@ -187,7 +176,7 @@ StickyState.prototype.canSticky = function() {
 
 StickyState.prototype.addSrollHandler = function() {
   if (!this.scrollHandler) {
-    this.fastScroll = getFastScroll(this.scrollTarget);
+    this.fastScroll = new FastScroll(this.scrollTarget);
     this.scrollHandler = this.updateStickyState.bind(this);
     this.fastScroll.on('scroll:start', this.scrollHandler);
     this.fastScroll.on('scroll:progress', this.scrollHandler);
