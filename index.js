@@ -81,7 +81,7 @@ var StickyState = function(element, options) {
   this.hasOwnScrollTarget = this.scrollTarget !== window;
   this.firstRender = true;
   this.hasFeature = null;
-  this.scrollHandler = null;
+  this.onScroll = null;
   this.resizeHandler = null;
   this.fastScroll = null;
   this.wrapper = null;
@@ -122,28 +122,32 @@ StickyState.prototype.getBoundingClientRect = function() {
   return this.el.getBoundingClientRect();
 }
 
-StickyState.prototype.getBounds = function() {
-  var style = this.getPositionStyle();
+StickyState.prototype.getBounds = function(noCache) {
 
-  var currentBounds = {
-    style: this.state.style,
-    bounds: this.state.bounds,
-    restrict: this.state.restrict
-  };
-
-  if (currentBounds.style.top === style.top && currentBounds.style.bottom === style.bottom && this.getBoundingClientRect().height === currentBounds.bounds.height) {
-    return currentBounds;
+  if(noCache !== true && this.state.bounds.height !== null) {
+    if (this.getBoundingClientRect().height === this.state.bounds.height) {
+      return {
+        bounds: this.state.bounds,
+        restrict: this.state.restrict
+      };
+    }
   }
 
+
+  var style = this.getPositionStyle();
   var rect;
   var restrict;
+  var fixedOffset = {
+      top: 0,
+      bottom: 0
+  };
 
   if (!this.canSticky()) {
     rect = getAbsolutBoundingRect(this.child);
     if (this.hasOwnScrollTarget) {
       var parentRect = getAbsolutBoundingRect(this.scrollTarget);
-      this.state.fixedOffset.top = parentRect.top;
-      this.state.fixedOffset.bottom = parentRect.bottom;
+      fixedOffset.top = parentRect.top;
+      fixedOffset.bottom = parentRect.bottom;
       rect = addBounds(rect, parentRect);
       restrict = assign({}, rect); //getAbsolutBoundingRect(this.child.parentNode);
     }
@@ -181,6 +185,7 @@ StickyState.prototype.getBounds = function() {
 
   return {
     style: style,
+    fixedOffset: fixedOffset,
     bounds: rect,
     restrict: restrict
   };
@@ -199,14 +204,14 @@ StickyState.prototype.canSticky = function() {
 };
 
 StickyState.prototype.addSrollHandler = function() {
-  if (!this.scrollHandler) {
+  if (!this.onScroll) {
     var hasScrollTarget = FastScroll.hasScrollTarget(this.scrollTarget);
 
     this.fastScroll = new FastScroll(this.scrollTarget);
-    this.scrollHandler = this.updateStickyState.bind(this);
-    this.fastScroll.on('scroll:start', this.scrollHandler);
-    this.fastScroll.on('scroll:progress', this.scrollHandler);
-    this.fastScroll.on('scroll:stop', this.scrollHandler);
+    this.onScroll = this.updateStickyState.bind(this);
+    this.fastScroll.on('scroll:start', this.onScroll);
+    this.fastScroll.on('scroll:progress', this.onScroll);
+    this.fastScroll.on('scroll:stop', this.onScroll);
     if (hasScrollTarget && this.fastScroll.scrollY > 0) {
       this.fastScroll.trigger('scroll:progress');
     }
@@ -215,11 +220,11 @@ StickyState.prototype.addSrollHandler = function() {
 
 StickyState.prototype.removeSrollHandler = function() {
   if (this.fastScroll) {
-    this.fastScroll.off('scroll:start', this.scrollHandler);
-    this.fastScroll.off('scroll:progress', this.scrollHandler);
-    this.fastScroll.off('scroll:stop', this.scrollHandler);
+    this.fastScroll.off('scroll:start', this.onScroll);
+    this.fastScroll.off('scroll:progress', this.onScroll);
+    this.fastScroll.off('scroll:stop', this.onScroll);
     this.fastScroll.destroy();
-    this.scrollHandler = null;
+    this.onScroll = null;
     this.fastScroll = null;
   }
 };
@@ -247,7 +252,6 @@ StickyState.prototype.onResize = function(e) {
 
 StickyState.prototype.getStickyState = function() {
 
-  var child = this.child;
   var scrollY = this.fastScroll.scrollY;
   var top = this.state.style.top;
   var sticky = this.state.sticky;
@@ -289,8 +293,6 @@ StickyState.prototype.updateStickyState = function(silent) {
     this.setState(state, silent);
   }
 };
-
-;
 
 StickyState.prototype.render = function() {
 
