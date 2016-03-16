@@ -8,7 +8,7 @@ var _globals = {
 var defaults = {
   disabled: false,
   className: 'sticky',
-  useAnimationFrame: false,
+  fixedClass: 'sticky-fixed',
   stateClassName: 'is-sticky'
 };
 
@@ -53,7 +53,7 @@ var StickyState = function(element, options) {
 
   this.state = {
     sticky: false,
-    fixedOffset:{
+    fixedOffset: {
       top: 0,
       bottom: 0
     },
@@ -63,15 +63,21 @@ var StickyState = function(element, options) {
       height: null,
       width: null
     },
-    restrict: null,
+    restrict: {
+      top: null,
+      bottom: null,
+      height: null,
+      width: null
+    },
     style: {
       top: null,
       bottom: null
-    }
+    },
+    disabled: false
   };
 
   this.child = this.el;
-  this.scrollTarget = StickyState.native() ? (window.getComputedStyle(this.el.parentNode).overflow !== 'auto' ? window :  this.el.parentNode) : window;
+  this.scrollTarget = StickyState.native() ? (window.getComputedStyle(this.el.parentNode).overflow !== 'auto' ? window : this.el.parentNode) : window;
   this.hasOwnScrollTarget = this.scrollTarget !== window;
   this.firstRender = true;
   this.hasFeature = null;
@@ -88,9 +94,9 @@ var StickyState = function(element, options) {
   this.render();
 };
 
-StickyState.prototype.updateState = function(values, silent) {
+StickyState.prototype.setState = function(state, silent) {
   silent = silent === true;
-  this.state = assign({}, this.state, values);
+  this.state = assign({}, this.state, state);
   if (!silent) {
     this.render();
   }
@@ -112,10 +118,27 @@ StickyState.prototype.getPositionStyle = function() {
   return obj;
 };
 
-StickyState.prototype.updateBounds = function(silent) {
-  silent = silent === true;
 
+StickyState.prototype.getBoundingClientRect = function() {
+  return this.el.getBoundingClientRect();
+}
+
+StickyState.prototype.getBounds = function() {
   var style = this.getPositionStyle();
+
+  var currentBounds = {
+    style: this.state.style,
+    bounds: this.state.bounds,
+    restrict: this.state.restrict
+  };
+
+  if (currentBounds.style.top === style.top && currentBounds.style.bottom === style.bottom) {
+    if (this.getBoundingClientRect().height === currentBounds.bounds.height) {
+      return currentBounds;
+    }
+  }
+
+
   var rect;
   var restrict;
 
@@ -126,9 +149,9 @@ StickyState.prototype.updateBounds = function(silent) {
       this.state.fixedOffset.top = parentRect.top;
       this.state.fixedOffset.bottom = parentRect.bottom;
       rect = addBounds(rect, parentRect);
-      restrict = rect;//getAbsolutBoundingRect(this.child.parentNode);
+      restrict = assign({}, rect); //getAbsolutBoundingRect(this.child.parentNode);
     }
-  }else {
+  } else {
     var elem = getPreviousElementSibling(this.child);
     var offset = 0;
 
@@ -140,9 +163,9 @@ StickyState.prototype.updateBounds = function(silent) {
         rect = addBounds(rect, getAbsolutBoundingRect(this.scrollTarget));
       }
 
-      rect.top  = rect.bottom + offset;
+      rect.top = rect.bottom + offset;
 
-    }else {
+    } else {
       elem = this.child.parentNode;
       offset = parseInt(window.getComputedStyle(elem)['padding-top']);
       offset = offset || 0;
@@ -150,7 +173,7 @@ StickyState.prototype.updateBounds = function(silent) {
       if (this.hasOwnScrollTarget) {
         rect = addBounds(rect, getAbsolutBoundingRect(this.scrollTarget));
       }
-      rect.top =  rect.top +  offset;
+      rect.top = rect.top + offset;
     }
 
     rect.height = this.child.clientHeight;
@@ -160,11 +183,16 @@ StickyState.prototype.updateBounds = function(silent) {
 
   restrict = restrict || getAbsolutBoundingRect(this.child.parentNode);
 
-  this.updateState({
+  return {
     style: style,
     bounds: rect,
-    restrict:restrict
-  }, silent);
+    restrict: restrict
+  };
+};
+
+StickyState.prototype.updateBounds = function(silent) {
+  silent = silent === true;
+  this.setState(this.getBounds(), silent);
 };
 
 StickyState.prototype.canSticky = function() {
@@ -176,11 +204,16 @@ StickyState.prototype.canSticky = function() {
 
 StickyState.prototype.addSrollHandler = function() {
   if (!this.scrollHandler) {
+    var hasScrollTarget = FastScroll.hasScrollTarget(this.scrollTarget);
+
     this.fastScroll = new FastScroll(this.scrollTarget);
     this.scrollHandler = this.updateStickyState.bind(this);
     this.fastScroll.on('scroll:start', this.scrollHandler);
     this.fastScroll.on('scroll:progress', this.scrollHandler);
     this.fastScroll.on('scroll:stop', this.scrollHandler);
+    if (hasScrollTarget && this.fastScroll.scrollY > 0) {
+      this.fastScroll.trigger('scroll:progress');
+    }
   }
 };
 
@@ -225,20 +258,20 @@ StickyState.prototype.updateStickyState = function(silent) {
 
   var top = this.state.style.top;
   var offsetBottom;
-
+  var newState;
 
   if (top !== null) {
     offsetBottom = this.state.restrict.bottom - this.state.bounds.height - top;
     top = this.state.bounds.top - top;
 
     if (this.state.sticky === false && scrollY >= top && scrollY <= offsetBottom) {
-      this.updateState({
-        sticky: true
-      }, silent);
+      newState = this.getBounds();
+      newState.sticky = true;
+      this.setState(newState, silent);
     } else if (this.state.sticky && (scrollY < top || scrollY > offsetBottom)) {
-      this.updateState({
-        sticky: false
-      }, silent);
+      newState = this.getBounds();
+      newState.sticky = false;
+      this.setState(newState, silent);
     }
 
     return;
@@ -251,13 +284,13 @@ StickyState.prototype.updateStickyState = function(silent) {
     bottom = this.state.bounds.bottom + bottom;
 
     if (this.state.sticky === false && scrollY <= bottom && scrollY >= offsetBottom) {
-      this.updateState({
-        sticky: true
-      }, silent);
+      newState = this.getBounds();
+      newState.sticky = true;
+      this.setState(newState, silent);
     } else if (this.state.sticky && (scrollY > bottom || scrollY < offsetBottom)) {
-      this.updateState({
-        sticky: false
-      }, silent);
+      newState = this.getBounds();
+      newState.sticky = false;
+      this.setState(newState, silent);
     }
   }
 
@@ -289,8 +322,7 @@ StickyState.prototype.updateDom = function() {
   }
 
   if (!this.canSticky()) {
-    var height = this.state.bounds.height;
-    height = (!this.state.sticky || height === null) ? 'auto' : height + 'px';
+    var height = (this.state.disabled || (!this.state.sticky || this.state.bounds.height === null)) ? 'auto' : this.state.bounds.height + 'px';
 
     // if(this.state.sticky && this.state.fixedOffset.top !== 0){
     //   this.el.style.marginTop = this.state.fixedOffset.top+'px';
@@ -323,8 +355,8 @@ StickyState.native = function() {
 
     _globals.featureTested = true;
 
-    if(window.Modernizr && window.Modernizr.hasOwnProperty('csspositionsticky')) {
-      return  _globals.canSticky = window.Modernizr.csspositionsticky;
+    if (window.Modernizr && window.Modernizr.hasOwnProperty('csspositionsticky')) {
+      return _globals.canSticky = window.Modernizr.csspositionsticky;
     }
 
     var testEl = document.createElement('div');
@@ -333,10 +365,10 @@ StickyState.native = function() {
 
     _globals.canSticky = false;
 
-    for(var i = 0; i < prefixedSticky.length; i++) {
+    for (var i = 0; i < prefixedSticky.length; i++) {
       testEl.style.position = prefixedSticky[i];
       _globals.canSticky = !!window.getComputedStyle(testEl).position.match('sticky');
-      if(_globals.canSticky){
+      if (_globals.canSticky) {
         break;
       }
     }
