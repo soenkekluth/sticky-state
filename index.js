@@ -86,8 +86,7 @@ var StickyState = function(element, options) {
   this.fastScroll = null;
   this.wrapper = null;
 
-  this.updateDom = this.updateDom.bind(this);
-  this.render = (this.state.useAnimationFrame && window && window.requestAnimationFrame) ? this.renderOnAnimationFrame.bind(this) : this.updateDom;
+  this.render = this.render.bind(this);
 
   this.addSrollHandler();
   this.addResizeHandler();
@@ -132,12 +131,9 @@ StickyState.prototype.getBounds = function() {
     restrict: this.state.restrict
   };
 
-  if (currentBounds.style.top === style.top && currentBounds.style.bottom === style.bottom) {
-    if (this.getBoundingClientRect().height === currentBounds.bounds.height) {
-      return currentBounds;
-    }
+  if (currentBounds.style.top === style.top && currentBounds.style.bottom === style.bottom && this.getBoundingClientRect().height === currentBounds.bounds.height) {
+    return currentBounds;
   }
-
 
   var rect;
   var restrict;
@@ -249,32 +245,24 @@ StickyState.prototype.onResize = function(e) {
   this.updateStickyState(false);
 };
 
-StickyState.prototype.updateStickyState = function(silent) {
+StickyState.prototype.getStickyState = function() {
 
   var child = this.child;
-
-  silent = silent === true;
   var scrollY = this.fastScroll.scrollY;
-
   var top = this.state.style.top;
+  var sticky = this.state.sticky;
   var offsetBottom;
-  var newState;
 
   if (top !== null) {
     offsetBottom = this.state.restrict.bottom - this.state.bounds.height - top;
     top = this.state.bounds.top - top;
 
     if (this.state.sticky === false && scrollY >= top && scrollY <= offsetBottom) {
-      newState = this.getBounds();
-      newState.sticky = true;
-      this.setState(newState, silent);
+      sticky = true;
     } else if (this.state.sticky && (scrollY < top || scrollY > offsetBottom)) {
-      newState = this.getBounds();
-      newState.sticky = false;
-      this.setState(newState, silent);
+      sticky = false;
     }
-
-    return;
+    return sticky;
   }
 
   scrollY += window.innerHeight;
@@ -284,23 +272,27 @@ StickyState.prototype.updateStickyState = function(silent) {
     bottom = this.state.bounds.bottom + bottom;
 
     if (this.state.sticky === false && scrollY <= bottom && scrollY >= offsetBottom) {
-      newState = this.getBounds();
-      newState.sticky = true;
-      this.setState(newState, silent);
+      sticky = true;
     } else if (this.state.sticky && (scrollY > bottom || scrollY < offsetBottom)) {
-      newState = this.getBounds();
-      newState.sticky = false;
-      this.setState(newState, silent);
+      sticky = false;
     }
   }
-
+  return sticky;
 };
 
-StickyState.prototype.renderOnAnimationFrame = function() {
-  window.requestAnimationFrame(this.updateDom);
+StickyState.prototype.updateStickyState = function(silent) {
+  var sticky = this.getStickyState();
+  if(sticky !== this.state.sticky) {
+    silent = silent === true;
+    var state = this.getBounds();
+    state.sticky = sticky;
+    this.setState(state, silent);
+  }
 };
 
-StickyState.prototype.updateDom = function() {
+;
+
+StickyState.prototype.render = function() {
 
   if (this.firstRender) {
     this.firstRender = false;
