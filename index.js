@@ -164,8 +164,8 @@ StickyState.prototype.getBounds = function(noCache) {
       rect = getAbsolutBoundingRect(elem);
       if (this.hasOwnScrollTarget) {
         rect = addBounds(rect, getAbsolutBoundingRect(this.scrollTarget));
+        offset += this.fastScroll.scrollY;
       }
-
       rect.top = rect.bottom + offset;
 
     } else {
@@ -175,8 +175,15 @@ StickyState.prototype.getBounds = function(noCache) {
       rect = getAbsolutBoundingRect(elem);
       if (this.hasOwnScrollTarget) {
         rect = addBounds(rect, getAbsolutBoundingRect(this.scrollTarget));
+        offset += this.fastScroll.scrollY;
       }
       rect.top = rect.top + offset;
+    }
+    if(this.hasOwnScrollTarget){
+      restrict = getAbsolutBoundingRect(this.scrollTarget);
+      restrict.top = 0;
+      restrict.height = this.scrollTarget.scrollHeight || restrict.height;
+      restrict.bottom = restrict.height;
     }
 
     rect.height = this.child.clientHeight;
@@ -267,7 +274,6 @@ StickyState.prototype.getStickyState = function() {
   if (top !== null) {
     offsetBottom = this.state.restrict.bottom - this.state.bounds.height - top;
     top = this.state.bounds.top - top;
-
     if (this.state.sticky === false && scrollY >= top && scrollY <= offsetBottom) {
       sticky = true;
     } else if (this.state.sticky && (scrollY < top || scrollY > offsetBottom)) {
