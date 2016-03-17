@@ -16,13 +16,14 @@ function getSrollPosition() {
   return (window.scrollY || window.pageYOffset || 0);
 }
 
-function getAbsolutBoundingRect(el) {
+function getAbsolutBoundingRect(el, fixedHeight) {
   var rect = el.getBoundingClientRect();
   var top = rect.top + getSrollPosition();
+  var height = fixedHeight || rect.height;
   return {
     top: top,
-    bottom: top + rect.height,
-    height: rect.height,
+    bottom: top + height,
+    height: height,
     width: rect.width
   };
 }
@@ -124,8 +125,10 @@ StickyState.prototype.getBoundingClientRect = function() {
 
 StickyState.prototype.getBounds = function(noCache) {
 
+  var clientRect  = this.getBoundingClientRect();
+
   if(noCache !== true && this.state.bounds.height !== null) {
-    if (this.getBoundingClientRect().height === this.state.bounds.height) {
+    if (clientRect.height === this.state.bounds.height) {
       return {
         bounds: this.state.bounds,
         restrict: this.state.restrict
@@ -143,13 +146,13 @@ StickyState.prototype.getBounds = function(noCache) {
   };
 
   if (!this.canSticky()) {
-    rect = getAbsolutBoundingRect(this.child);
+    rect = getAbsolutBoundingRect(this.child, clientRect.height);
     if (this.hasOwnScrollTarget) {
       var parentRect = getAbsolutBoundingRect(this.scrollTarget);
       fixedOffset.top = parentRect.top;
       fixedOffset.bottom = parentRect.bottom;
       rect = addBounds(rect, parentRect);
-      restrict = assign({}, rect); //getAbsolutBoundingRect(this.child.parentNode);
+      restrict = assign({}, rect);
     }
   } else {
     var elem = getPreviousElementSibling(this.child);
@@ -251,6 +254,10 @@ StickyState.prototype.onResize = function(e) {
 };
 
 StickyState.prototype.getStickyState = function() {
+
+  if(this.state.disabled){
+    return false;
+  }
 
   var scrollY = this.fastScroll.scrollY;
   var top = this.state.style.top;
