@@ -10,7 +10,7 @@ unlike almost all polyfills you can find in the wild StickyState is high perfoma
 none!
 
 ###Browser support
-IE >= 10, *
+IE >= 9, *
 
 ###install
 ```
