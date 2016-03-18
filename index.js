@@ -52,12 +52,9 @@ var StickyState = function(element, options) {
   this.el = element;
   this.options = assign({}, defaults, options);
 
-  this.state = {
+  this.setState({
     sticky: false,
-    fixedOffset: {
-      top: 0,
-      bottom: 0
-    },
+    fixedOffset: '',
     bounds: {
       top: null,
       bottom: null,
@@ -75,14 +72,18 @@ var StickyState = function(element, options) {
       bottom: null
     },
     disabled: false
-  };
+  }, true);
+
 
   this.child = this.el;
-  this.scrollTarget = StickyState.native() ? (window.getComputedStyle(this.el.parentNode).overflow !== 'auto' ? window : this.el.parentNode) : window;
+  // this.scrollTarget = StickyState.native() ? (window.getComputedStyle(this.el.parentNode).overflow !== 'auto' ? window : this.el.parentNode) : window;
+  this.scrollTarget = (window.getComputedStyle(this.el.parentNode).overflow !== 'auto' ? window : this.el.parentNode);
   this.hasOwnScrollTarget = this.scrollTarget !== window;
+  if(this.hasOwnScrollTarget){
+    this.updateFixedOffset = this.updateFixedOffset.bind(this);
+  }
   this.firstRender = true;
   this.hasFeature = null;
-  this.onScroll = null;
   this.resizeHandler = null;
   this.fastScroll = null;
   this.wrapper = null;
@@ -96,6 +97,7 @@ var StickyState = function(element, options) {
 
 StickyState.prototype.setState = function(state, silent) {
   silent = silent === true;
+  this.lastState = assign({}, this.state);
   this.state = assign({}, this.state, state);
   if (!silent) {
     this.render();
@@ -140,23 +142,23 @@ StickyState.prototype.getBounds = function(noCache) {
   var style = this.getPositionStyle();
   var rect;
   var restrict;
-  var fixedOffset = {
-      top: 0,
-      bottom: 0
-  };
+  var offset = 0;
+
 
   if (!this.canSticky()) {
     rect = getAbsolutBoundingRect(this.child, clientRect.height);
     if (this.hasOwnScrollTarget) {
       var parentRect = getAbsolutBoundingRect(this.scrollTarget);
-      fixedOffset.top = parentRect.top;
-      fixedOffset.bottom = parentRect.bottom;
+      offset = this.fastScroll.scrollY;
       rect = addBounds(rect, parentRect);
-      restrict = assign({}, rect);
+      restrict = parentRect;
+      restrict.top = 0;
+      restrict.height = this.scrollTarget.scrollHeight || restrict.height;
+      restrict.bottom = restrict.height;
     }
   } else {
     var elem = getPreviousElementSibling(this.child);
-    var offset = 0;
+    offset = 0;
 
     if (elem) {
       offset = parseInt(window.getComputedStyle(elem)['margin-bottom']);
@@ -195,7 +197,6 @@ StickyState.prototype.getBounds = function(noCache) {
 
   return {
     style: style,
-    fixedOffset: fixedOffset,
     bounds: rect,
     restrict: restrict
   };
@@ -206,6 +207,18 @@ StickyState.prototype.updateBounds = function(silent) {
   this.setState(this.getBounds(), silent);
 };
 
+StickyState.prototype.updateFixedOffset = function() {
+  this.lastState.fixedOffset = this.state.fixedOffset;
+  if(this.state.sticky){
+    this.state.fixedOffset = this.scrollTarget.getBoundingClientRect().top +'px';
+  }else{
+    this.state.fixedOffset = '';
+  }
+  if(this.lastState.fixedOffset !== this.state.fixedOffset){
+    this.render();
+  }
+};
+
 StickyState.prototype.canSticky = function() {
   if (this.hasFeature !== null) {
     return this.hasFeature;
@@ -214,11 +227,11 @@ StickyState.prototype.canSticky = function() {
 };
 
 StickyState.prototype.addSrollHandler = function() {
-  if (!this.onScroll) {
+  if (!this.fastScroll) {
     var hasScrollTarget = FastScroll.hasScrollTarget(this.scrollTarget);
 
     this.fastScroll = new FastScroll(this.scrollTarget);
-    this.onScroll = this.updateStickyState.bind(this);
+    this.onScroll = this.onScroll.bind(this);
     this.fastScroll.on('scroll:start', this.onScroll);
     this.fastScroll.on('scroll:progress', this.onScroll);
     this.fastScroll.on('scroll:stop', this.onScroll);
@@ -234,7 +247,7 @@ StickyState.prototype.removeSrollHandler = function() {
     this.fastScroll.off('scroll:progress', this.onScroll);
     this.fastScroll.off('scroll:stop', this.onScroll);
     this.fastScroll.destroy();
-    this.onScroll = null;
+    // this.onScroll = null;
     this.fastScroll = null;
   }
 };
@@ -254,6 +267,21 @@ StickyState.prototype.removeResizeHandler = function() {
     this.resizeHandler = null;
   }
 };
+
+StickyState.prototype.onScroll = function(e) {
+  this.updateStickyState(false);
+  if(this.hasOwnScrollTarget && !this.canSticky()) {
+    this.updateFixedOffset();
+    if(this.state.sticky && !this.hasWindowScrollListener){
+      this.hasWindowScrollListener = true;
+      FastScroll.getInstance(window).on('scroll:progress', this.updateFixedOffset);
+    }else if(!this.state.sticky && this.hasWindowScrollListener){
+      this.hasWindowScrollListener = false;
+      FastScroll.getInstance(window).off('scroll:progress', this.updateFixedOffset);
+    }
+  }
+};
+
 
 StickyState.prototype.onResize = function(e) {
   this.updateBounds(true);
@@ -331,9 +359,9 @@ StickyState.prototype.render = function() {
   if (!this.canSticky()) {
     var height = (this.state.disabled || (!this.state.sticky || this.state.bounds.height === null)) ? 'auto' : this.state.bounds.height + 'px';
 
-    // if(this.state.sticky && this.state.fixedOffset.top !== 0){
-    //   this.el.style.marginTop = this.state.fixedOffset.top+'px';
-    // }
+    if(this.hasOwnScrollTarget && this.lastState.fixedOffset !== this.state.fixedOffset){
+      this.el.style.marginTop = this.state.fixedOffset;
+    }
 
     this.wrapper.style.height = height;
   }
