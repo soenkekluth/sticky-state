@@ -11,3 +11,9 @@
   -webkit-backface-visibility: hidden;
           backface-visibility: hidden;
 }
+
+
+
+.sticky.sticky-fixed.is-absolute{
+  position: absolute;
+}

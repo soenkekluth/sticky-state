@@ -54,6 +54,8 @@ var StickyState = function(element, options) {
 
   this.setState({
     sticky: false,
+    marginTop: '',
+    marginBottom: '',
     fixedOffset: '',
     bounds: {
       top: null,
@@ -76,10 +78,9 @@ var StickyState = function(element, options) {
 
 
   this.child = this.el;
-  // this.scrollTarget = StickyState.native() ? (window.getComputedStyle(this.el.parentNode).overflow !== 'auto' ? window : this.el.parentNode) : window;
   this.scrollTarget = (window.getComputedStyle(this.el.parentNode).overflow !== 'auto' ? window : this.el.parentNode);
   this.hasOwnScrollTarget = this.scrollTarget !== window;
-  if(this.hasOwnScrollTarget){
+  if (this.hasOwnScrollTarget) {
     this.updateFixedOffset = this.updateFixedOffset.bind(this);
   }
   this.firstRender = true;
@@ -95,10 +96,10 @@ var StickyState = function(element, options) {
   this.render();
 };
 
-StickyState.prototype.setState = function(state, silent) {
+StickyState.prototype.setState = function(newState, silent) {
   silent = silent === true;
-  this.lastState = assign({}, this.state);
-  this.state = assign({}, this.state, state);
+  this.lastState = this.state || newState;
+  this.state = assign({}, this.state, newState);
   if (!silent) {
     this.render();
   }
@@ -127,9 +128,9 @@ StickyState.prototype.getBoundingClientRect = function() {
 
 StickyState.prototype.getBounds = function(noCache) {
 
-  var clientRect  = this.getBoundingClientRect();
+  var clientRect = this.getBoundingClientRect();
 
-  if(noCache !== true && this.state.bounds.height !== null) {
+  if (noCache !== true && this.state.bounds.height !== null) {
     if (clientRect.height === this.state.bounds.height) {
       return {
         bounds: this.state.bounds,
@@ -181,7 +182,7 @@ StickyState.prototype.getBounds = function(noCache) {
       }
       rect.top = rect.top + offset;
     }
-    if(this.hasOwnScrollTarget){
+    if (this.hasOwnScrollTarget) {
       restrict = getAbsolutBoundingRect(this.scrollTarget);
       restrict.top = 0;
       restrict.height = this.scrollTarget.scrollHeight || restrict.height;
@@ -209,12 +210,12 @@ StickyState.prototype.updateBounds = function(silent) {
 
 StickyState.prototype.updateFixedOffset = function() {
   this.lastState.fixedOffset = this.state.fixedOffset;
-  if(this.state.sticky){
-    this.state.fixedOffset = this.scrollTarget.getBoundingClientRect().top +'px';
-  }else{
+  if (this.state.sticky) {
+    this.state.fixedOffset = this.scrollTarget.getBoundingClientRect().top + 'px';
+  } else {
     this.state.fixedOffset = '';
   }
-  if(this.lastState.fixedOffset !== this.state.fixedOffset){
+  if (this.lastState.fixedOffset !== this.state.fixedOffset) {
     this.render();
   }
 };
@@ -230,7 +231,7 @@ StickyState.prototype.addSrollHandler = function() {
   if (!this.fastScroll) {
     var hasScrollTarget = FastScroll.hasScrollTarget(this.scrollTarget);
 
-    this.fastScroll = new FastScroll(this.scrollTarget);
+    this.fastScroll = FastScroll.getInstance(this.scrollTarget);
     this.onScroll = this.onScroll.bind(this);
     this.fastScroll.on('scroll:start', this.onScroll);
     this.fastScroll.on('scroll:progress', this.onScroll);
@@ -247,7 +248,6 @@ StickyState.prototype.removeSrollHandler = function() {
     this.fastScroll.off('scroll:progress', this.onScroll);
     this.fastScroll.off('scroll:stop', this.onScroll);
     this.fastScroll.destroy();
-    // this.onScroll = null;
     this.fastScroll = null;
   }
 };
@@ -270,12 +270,12 @@ StickyState.prototype.removeResizeHandler = function() {
 
 StickyState.prototype.onScroll = function(e) {
   this.updateStickyState(false);
-  if(this.hasOwnScrollTarget && !this.canSticky()) {
+  if (this.hasOwnScrollTarget && !this.canSticky()) {
     this.updateFixedOffset();
-    if(this.state.sticky && !this.hasWindowScrollListener){
+    if (this.state.sticky && !this.hasWindowScrollListener) {
       this.hasWindowScrollListener = true;
       FastScroll.getInstance(window).on('scroll:progress', this.updateFixedOffset);
-    }else if(!this.state.sticky && this.hasWindowScrollListener){
+    } else if (!this.state.sticky && this.hasWindowScrollListener) {
       this.hasWindowScrollListener = false;
       FastScroll.getInstance(window).off('scroll:progress', this.updateFixedOffset);
     }
@@ -290,48 +290,59 @@ StickyState.prototype.onResize = function(e) {
 
 StickyState.prototype.getStickyState = function() {
 
-  if(this.state.disabled){
-    return false;
+  if (this.state.disabled) {
+    return { sticky: false, marginTop: '', marginBottom: '' };
   }
 
   var scrollY = this.fastScroll.scrollY;
   var top = this.state.style.top;
+  var bottom = this.state.style.bottom;
+  var marginTop = this.state.marginTop;
+  var marginBottom = this.state.marginBottom;
   var sticky = this.state.sticky;
-  var offsetBottom;
+
 
   if (top !== null) {
-    offsetBottom = this.state.restrict.bottom - this.state.bounds.height - top;
+    var offsetBottom = this.state.restrict.bottom - this.state.bounds.height - top;
     top = this.state.bounds.top - top;
     if (this.state.sticky === false && scrollY >= top && scrollY <= offsetBottom) {
       sticky = true;
+      marginTop = '';
     } else if (this.state.sticky && (scrollY < top || scrollY > offsetBottom)) {
       sticky = false;
-    }
-    return sticky;
-  }
 
-  scrollY += window.innerHeight;
-  var bottom = this.state.style.bottom;
-  if (bottom !== null) {
-    offsetBottom = this.state.restrict.top + this.state.bounds.height - bottom;
+      if (scrollY > offsetBottom && this.state.marginTop === '') {
+        marginTop = (this.state.restrict.height - this.state.restrict.top - this.state.style.top - this.state.bounds.height +2 ) + 'px';
+      }
+    }
+  } else if (bottom !== null) {
+
+    scrollY += window.innerHeight;
+    var offsetTop = this.state.restrict.top + this.state.bounds.height - bottom;
     bottom = this.state.bounds.bottom + bottom;
 
-    if (this.state.sticky === false && scrollY <= bottom && scrollY >= offsetBottom) {
+    if (this.state.sticky === false && scrollY <= bottom && scrollY >= offsetTop) {
       sticky = true;
-    } else if (this.state.sticky && (scrollY > bottom || scrollY < offsetBottom)) {
+      marginBottom = '';
+    } else if (this.state.sticky && (scrollY > bottom || scrollY < offsetTop)) {
       sticky = false;
+      if (scrollY < offsetTop && this.state.marginBottom === '') {
+        marginBottom = (this.state.restrict.height - this.state.bounds.height * 2 + 2) + 'px';
+      }
     }
   }
-  return sticky;
+  return { sticky: sticky, marginTop: marginTop, marginBottom: marginBottom };
 };
 
 StickyState.prototype.updateStickyState = function(silent) {
-  var sticky = this.getStickyState();
-  if(sticky !== this.state.sticky) {
+  var state = this.getStickyState();
+  if (state.sticky !== this.state.sticky) {
     silent = silent === true;
-    var state = this.getBounds();
-    state.sticky = sticky;
-    this.setState(state, silent);
+    var bounds = this.getBounds();
+    bounds.sticky = state.sticky;
+    bounds.marginTop = state.marginTop;
+    bounds.marginBottom = state.marginBottom;
+    this.setState(bounds, silent);
   }
 };
 
@@ -356,22 +367,37 @@ StickyState.prototype.render = function() {
     this.updateStickyState(true);
   }
 
+
+  var className = this.el.className;
+
   if (!this.canSticky()) {
     var height = (this.state.disabled || (!this.state.sticky || this.state.bounds.height === null)) ? 'auto' : this.state.bounds.height + 'px';
+    this.wrapper.style.height = height;
 
-    if(this.hasOwnScrollTarget && this.lastState.fixedOffset !== this.state.fixedOffset){
+    if (this.hasOwnScrollTarget && this.lastState.fixedOffset !== this.state.fixedOffset) {
       this.el.style.marginTop = this.state.fixedOffset;
     }
 
-    this.wrapper.style.height = height;
+    if (this.state.marginTop !== this.lastState.marginTop || this.state.marginBottom !== this.lastState.marginBottom) {
+      var hasAbsoluteClass = className.indexOf('is-absolute') > -1;
+      if (!hasAbsoluteClass && (this.state.marginTop !== '' || this.state.marginBottom !== '' )) {
+        className += ' is-absolute';
+        this.wrapper.style.position = 'relative';
+      } else {
+        className = className.split(' is-absolute').join('');
+        this.wrapper.style.position = '';
+      }
+      this.el.style.marginTop = this.state.marginTop;
+      this.el.style.marginBottom = this.state.marginBottom;
+    }
+
   }
 
-  var className = this.el.className;
   var hasStateClass = className.indexOf(this.options.stateClassName) > -1;
   if (this.state.sticky && !hasStateClass) {
-    className = className + ' ' + this.options.stateClassName;
+    className += (' ' + this.options.stateClassName);
   } else if (!this.state.sticky && hasStateClass) {
-    className = className.split(this.options.stateClassName).join('');
+    className = className.split((' ' + this.options.stateClassName)).join('');
   }
 
   if (this.el.className !== className) {
