@@ -70,7 +70,7 @@ var StickyState = function(element, options) {
     sticky: false,
     absolute: false,
     fixedOffset: '',
-    offsetHeight : 0,
+    offsetHeight: 0,
     bounds: {
       top: null,
       bottom: null,
@@ -352,13 +352,13 @@ StickyState.prototype.render = function() {
     this.updateStickyState(true);
   }
 
-
   if (!this.canSticky()) {
     var height = (this.state.disabled || this.state.bounds.height === null || (!this.state.sticky && !this.state.absolute)) ? 'auto' : this.state.bounds.height + 'px';
     this.wrapper.style.height = height;
-    this.wrapper.style.position = this.state.absolute ?  'relative' : '';
 
     if (this.state.absolute !== this.lastState.absolute) {
+      this.wrapper.style.position = this.state.absolute ?  'relative' : '';
+
       var hasAbsoluteClass = className.indexOf('is-absolute') > -1;
       className = className.indexOf('is-absolute') === -1 && this.state.absolute ? className + ' is-absolute' : className.split(' is-absolute').join('');
       this.el.style.marginTop = (this.state.absolute && this.state.style.top !== null) ? ( this.state.restrict.height - (this.state.bounds.height + this.state.style.top) + (this.state.restrict.top - this.state.bounds.top)) + 'px' : '';
