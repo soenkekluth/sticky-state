@@ -45,3 +45,5 @@ new StickyState(yourElement);
 StickyState.apply(document.querySelectorAll('.sticky'));
 // for example
 ```
+###React Component
+https://github.com/soenkekluth/react-sticky-state
