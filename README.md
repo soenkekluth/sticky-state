@@ -31,13 +31,17 @@ your css should contain the following lines:
   position: fixed;
   backface-visibility: hidden;
 }
+
+.sticky.sticky-fixed.is-absolute {
+  position: absolute;
+}
 ```
 
 ###js
 ```javascript
 var StickyState = require('sticky-state');
-new StickyState(yourElement, yourOptions);
-// or
+new StickyState(yourElement);
+// or for all elements with class .sticky
 StickyState.apply(document.querySelectorAll('.sticky'));
 // for example
 ```
