@@ -12,7 +12,7 @@
   <body>
 
     <h2>StickyState</h2>
-
+    <strong id="output"></strong>
     <p>A test page for the <a href="https://github.com/soenkekluth/sticky-state">StickyState project</a></p>
 
     <div class="container" style="height: 600px; padding-top: 100px;">
@@ -141,8 +141,8 @@
 
     <script>
       StickyState.apply(document.querySelectorAll('.sticky'));
-      // var overflowElem = document.querySelector('.sticky-overflow');
-      // new StickyState(overflowElem,{scrollTarget:overflowElem.parentNode} );
+      var out = StickyState.native() ? 'native position:sticky supported. state is added' : 'position:sticky is polyfilled';
+      document.querySelector('#output').innerText = out;
     </script>
 
   </body>
