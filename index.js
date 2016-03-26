@@ -7,9 +7,10 @@ var _globals = {
 
 var defaults = {
   disabled: false,
-  className: 'sticky',
-  fixedClass: 'sticky-fixed',
-  stateClassName: 'is-sticky'
+  classWrapper: 'sticky-wrap',
+  classFixed: 'sticky-fixed',
+  classStateSticky: 'is-sticky',
+  classStateAbsolute: 'is-absolute'
 };
 
 function getSrollPosition() {
@@ -343,13 +344,13 @@ StickyState.prototype.render = function() {
 
     if (!this.canSticky()) {
       this.wrapper = document.createElement('div');
-      this.wrapper.className = 'sticky-wrap';
+      this.wrapper.className = this.options.classWrapper;
       var parent = this.el.parentNode;
       if (parent) {
         parent.insertBefore(this.wrapper, this.el);
       }
       this.wrapper.appendChild(this.el);
-      className += ' sticky-fixed';
+      className += ' ' + this.options.classFixed;
     }
 
     this.updateBounds(true);
@@ -363,8 +364,12 @@ StickyState.prototype.render = function() {
     if (this.state.absolute !== this.lastState.absolute) {
       this.wrapper.style.position = this.state.absolute ?  'relative' : '';
 
-      var hasAbsoluteClass = className.indexOf('is-absolute') > -1;
-      className = className.indexOf('is-absolute') === -1 && this.state.absolute ? className + ' is-absolute' : className.split(' is-absolute').join('');
+      var hasClassStateAbsolute = className.indexOf(this.options.classStateAbsolute) > -1;
+      if (this.state.absolute && !hasClassStateAbsolute) {
+        className += ' ' + this.options.classStateAbsolute;
+      } else {
+        className = className.split((' ' + this.options.classStateAbsolute)).join('');
+      }
       this.el.style.marginTop = (this.state.absolute && this.state.style.top !== null) ? ( this.state.restrict.height - (this.state.bounds.height + this.state.style.top) + (this.state.restrict.top - this.state.bounds.top)) + 'px' : '';
       this.el.style.marginBottom = (this.state.absolute && this.state.style.bottom !== null) ?  (this.state.restrict.height - (this.state.bounds.height + this.state.style.bottom) + (this.state.restrict.bottom - this.state.bounds.bottom)) + 'px' : '';
     }
@@ -374,11 +379,11 @@ StickyState.prototype.render = function() {
     }
   }
 
-  var hasStateClass = className.indexOf(this.options.stateClassName) > -1;
-  if (this.state.sticky && !hasStateClass) {
-    className += (' ' + this.options.stateClassName);
-  } else if (!this.state.sticky && hasStateClass) {
-    className = className.split((' ' + this.options.stateClassName)).join('');
+  var hasClassStateSticky = className.indexOf(this.options.classStateSticky) > -1;
+  if (this.state.sticky && !hasClassStateSticky) {
+    className += ' ' + this.options.classStateSticky;
+  } else if (!this.state.sticky && hasClassStateSticky) {
+    className = className.split((' ' + this.options.classStateSticky)).join('');
   }
 
   if (this.el.className !== className) {
