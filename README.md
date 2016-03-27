@@ -39,11 +39,23 @@ Your css should contain the following lines:
 
 ### js
 ```javascript
+
 var StickyState = require('sticky-state');
-new StickyState(yourElement);
+
+var stickyOptions = {
+  disabled:       false,
+  className:      'sticky',
+  stateClassName: 'is-sticky',
+  fixedClass:     'sticky-fixed',
+  wrapperClass:   'sticky-wrap',
+  absoluteClass:  'is-absolute'
+};
+
+new StickyState(yourElement, stickyOptions);
 // or for all elements with class .sticky
-StickyState.apply(document.querySelectorAll('.sticky'));
+StickyState.apply(document.querySelectorAll('.sticky'), stickyOptions);
 // for example
 ```
+
 ### React Component
 https://github.com/soenkekluth/react-sticky-state
