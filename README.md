@@ -42,6 +42,12 @@ Your css should contain the following lines:
 
 var StickyState = require('sticky-state');
 
+new StickyState(yourElement);
+// or for all elements with class .sticky
+StickyState.apply(document.querySelectorAll('.sticky'));
+
+// stickyOptions shows the props you can set.
+
 var stickyOptions = {
   disabled:       false,
   className:      'sticky',
