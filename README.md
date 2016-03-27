@@ -43,11 +43,11 @@ Your css should contain the following lines:
 var StickyState = require('sticky-state');
 
 new StickyState(yourElement);
-// or for all elements with class .sticky
+
+//  all elements with class .sticky will have sticky state:
 StickyState.apply(document.querySelectorAll('.sticky'));
 
-// stickyOptions shows the props you can set.
-
+// the props you can set:
 var stickyOptions = {
   disabled:       false,
   className:      'sticky',
@@ -57,10 +57,11 @@ var stickyOptions = {
   absoluteClass:  'is-absolute'
 };
 
+// instantiate with options
 new StickyState(yourElement, stickyOptions);
-// or for all elements with class .sticky
+
+// you shoudl use the class name you defined in your options here: 
 StickyState.apply(document.querySelectorAll('.sticky'), stickyOptions);
-// for example
 ```
 
 ### React Component
