@@ -1,6 +1,6 @@
 {
   "name": "sticky-state",
-  "version": "1.4.1",
+  "version": "1.4.2",
   "description": "StickyState is a high performant module making native position:sticky statefull and polyfill the missing sticky browser feature",
   "main": "index.js",
   "scripts": {
@@ -31,11 +31,11 @@
   },
   "homepage": "https://github.com/soenkekluth/sticky-state#readme",
   "dependencies": {
-    "fastscroll": "1.7.3",
+    "fastscroll": "1.7.6",
     "object-assign": "^4.0.1"
   },
   "devDependencies": {
-    "browser-sync": "^2.11.1",
+    "browser-sync": "^2.11.2",
     "browserify": "^13.0.0",
     "concurrently": "^2.0.0",
     "uglifyjs": "^2.4.10",

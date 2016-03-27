@@ -6,10 +6,12 @@ var _globals = {
 };
 
 var defaults = {
-  disabled: false,
-  className: 'sticky',
-  fixedClass: 'sticky-fixed',
-  stateClassName: 'is-sticky'
+  disabled:       false,
+  className:      'sticky',
+  stateClassName: 'is-sticky',
+  fixedClass:     'sticky-fixed',
+  wrapperClass:   'sticky-wrap',
+  absoluteClass:  'is-absolute'
 };
 
 function getSrollPosition() {
@@ -203,6 +205,7 @@ StickyState.prototype.getBounds = function(noCache) {
   };
 };
 
+
 StickyState.prototype.updateBounds = function(silent) {
   silent = silent === true;
   this.setState(this.getBounds(), silent);
@@ -343,13 +346,13 @@ StickyState.prototype.render = function() {
 
     if (!this.canSticky()) {
       this.wrapper = document.createElement('div');
-      this.wrapper.className = 'sticky-wrap';
+      this.wrapper.className = this.options.wrapperClass;
       var parent = this.el.parentNode;
       if (parent) {
         parent.insertBefore(this.wrapper, this.el);
       }
       this.wrapper.appendChild(this.el);
-      className += ' sticky-fixed';
+      className += (' ' + this.options.fixedClass);
     }
 
     this.updateBounds(true);
@@ -363,8 +366,7 @@ StickyState.prototype.render = function() {
     if (this.state.absolute !== this.lastState.absolute) {
       this.wrapper.style.position = this.state.absolute ?  'relative' : '';
 
-      var hasAbsoluteClass = className.indexOf('is-absolute') > -1;
-      className = className.indexOf('is-absolute') === -1 && this.state.absolute ? className + ' is-absolute' : className.split(' is-absolute').join('');
+      className = className.indexOf(this.options.absoluteClass) === -1 && this.state.absolute ? className + (' ' + this.options.absoluteClass) : className.split((' ' + this.options.absoluteClass)).join('');
       this.el.style.marginTop = (this.state.absolute && this.state.style.top !== null) ? ( this.state.restrict.height - (this.state.bounds.height + this.state.style.top) + (this.state.restrict.top - this.state.bounds.top)) + 'px' : '';
       this.el.style.marginBottom = (this.state.absolute && this.state.style.bottom !== null) ?  (this.state.restrict.height - (this.state.bounds.height + this.state.style.bottom) + (this.state.restrict.bottom - this.state.bounds.bottom)) + 'px' : '';
     }
