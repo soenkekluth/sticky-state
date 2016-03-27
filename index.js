@@ -14,7 +14,7 @@ var defaults = {
   absoluteClass:  'is-absolute'
 };
 
-function getSrollPosition() {
+function getScrollPosition() {
   return (window.scrollY || window.pageYOffset || 0);
 }
 
@@ -24,7 +24,7 @@ function getDocumentHeight() {
 
 function getAbsolutBoundingRect(el, fixedHeight) {
   var rect = el.getBoundingClientRect();
-  var top = rect.top + getSrollPosition();
+  var top = rect.top + getScrollPosition();
   var height = fixedHeight || rect.height;
   return {
     top: top,
