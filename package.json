@@ -1,14 +1,14 @@
 {
   "name": "sticky-state",
-  "version": "1.4.3",
+  "version": "1.4.4",
   "description": "StickyState is a high performant module making native position:sticky statefull and polyfill the missing sticky browser feature",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build-debug": "browserify ./index.js -d --standalone StickyState > dist/stickystate.js",
-    "build-min": "browserify ./index.js --standalone StickyState | uglifyjs -c > dist/stickystate.min.js",
+    "build-debug": "browserify --fast -e index.js -d -s StickyState | derequire > dist/stickystate.js",
+    "build-min": "browserify -e ./index.js -s StickyState | derequire | uglifyjs > dist/stickystate.min.js",
     "dist": "npm run build-debug && npm run build-min",
-    "start": "npm run build-debug && node ./node_modules/concurrently/src/main.js --kill-others \"watchify ./index.js -d --s StickyState -o dist/stickystate.js -v\" \"npm run server\"",
+    "start": "npm run build-debug && concurrently --kill-others \"watchify --fast -e index.js -d -s StickyState -o dist/stickystate.js -v\" \"npm run server\"",
     "server": "browser-sync start --server --no-ghost-mode --directory --files 'examples/**/**, dist/*.js' --startPath examples/index.html"
   },
   "repository": {
@@ -31,13 +31,15 @@
   },
   "homepage": "https://github.com/soenkekluth/sticky-state#readme",
   "dependencies": {
-    "fastscroll": "1.7.6",
-    "object-assign": "^4.0.1"
+    "fastscroll": "1.7.8",
+    "object-assign": "4.1.0"
   },
   "devDependencies": {
-    "browser-sync": "^2.11.2",
-    "browserify": "^13.0.0",
-    "concurrently": "^2.0.0",
+    "browser-sync": "2.13.0",
+    "browserify": "13.0.1",
+    "concurrently": "2.1.0",
+    "derequire": "2.0.3",
+    "http-proxy-middleware": "0.16.0",
     "uglifyjs": "^2.4.10",
     "watchify": "^3.7.0"
   }
