@@ -11,5 +11,3 @@ publish:
     host: soenkekluth.com
     username: soenkekluth
     destination_path: /dev.soenkekluth.com/sticky-state
-    files:
-      - *.*
