@@ -6,4 +6,8 @@ build:
   image: node:6.2.2
   commands:
     - npm install
-    - npm test
+publish:
+  sftp:
+    host: soenkekluth.com
+    username: soenkekluth
+    destination_path: /dev.soenkekluth.com/sticky-state
