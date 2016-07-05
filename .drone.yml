@@ -1,0 +1,9 @@
+cache:
+  mount:
+    - node_modules
+    - .git
+build:
+  image: node:6.2.2
+  commands:
+    - npm install
+    - npm test
