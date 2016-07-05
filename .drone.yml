@@ -13,4 +13,3 @@ publish:
     destination_path: /dev.soenkekluth.com/sticky-state
     files:
       - *.*
-      - *
