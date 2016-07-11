@@ -60,7 +60,7 @@ var stickyOptions = {
 // instantiate with options
 new StickyState(yourElement, stickyOptions);
 
-// you shoudl use the class name you defined in your options here: 
+// you should use the class name you defined in your options here: 
 StickyState.apply(document.querySelectorAll('.sticky'), stickyOptions);
 ```
 
