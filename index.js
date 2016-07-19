@@ -208,7 +208,7 @@ StickyState.prototype.getBounds = function(noCache) {
 
 StickyState.prototype.updateBounds = function(silent) {
   silent = silent === true;
-  this.setState(this.getBounds(), silent);
+  this.setState(this.getBounds(true), silent);
 };
 
 StickyState.prototype.updateFixedOffset = function() {
