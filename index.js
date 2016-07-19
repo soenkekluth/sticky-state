@@ -271,6 +271,7 @@ StickyState.prototype.removeResizeHandler = function() {
 };
 
 StickyState.prototype.onScroll = function(e) {
+  this.updateBounds(true);
   this.updateStickyState(false);
   if (this.hasOwnScrollTarget && !this.canSticky()) {
     this.updateFixedOffset();
