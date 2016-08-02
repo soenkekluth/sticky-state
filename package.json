@@ -35,11 +35,11 @@
     "object-assign": "4.1.0"
   },
   "devDependencies": {
-    "browser-sync": "2.13.0",
-    "browserify": "13.0.1",
-    "concurrently": "2.1.0",
+    "browser-sync": "2.14.0",
+    "browserify": "13.1.0",
+    "concurrently": "2.2.0",
     "derequire": "2.0.3",
-    "http-proxy-middleware": "0.16.0",
+    "http-proxy-middleware": "0.17.0",
     "uglifyjs": "^2.4.10",
     "watchify": "^3.7.0"
   }
