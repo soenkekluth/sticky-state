@@ -1,0 +1,26 @@
+{
+  "name": "sticky-state",
+  "description": "StickyState is a high performant module making native position:sticky statefull and polyfill the missing sticky browser feature",
+  "main": "dist/stickystate.min.js",
+  "authors": [
+    "Sönke Kluth <soenke.kluth@gmail.com> (http://soenkekluth.com/)"
+  ],
+  "license": "MIT",
+  "keywords": [
+    "position:sticky",
+    "sticky",
+    "polyfill",
+    "state",
+    "statefull",
+    "performant",
+    "position"
+  ],
+  "homepage": "https://github.com/soenkekluth/sticky-state",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}
