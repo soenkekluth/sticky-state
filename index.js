@@ -96,6 +96,7 @@ var StickyState = function(element, options) {
     disabled: this.options.disabled
   }, true);
 
+  this.initialStyle = getPositionStyle(this.el);
   this.scrollTarget = (window.getComputedStyle(this.el.parentNode).overflow !== 'auto' ? window : this.el.parentNode);
   this.hasOwnScrollTarget = this.scrollTarget !== window;
   if (this.hasOwnScrollTarget) {
@@ -208,7 +209,7 @@ StickyState.prototype.getBounds = function(noCache) {
 
 StickyState.prototype.updateBounds = function(silent) {
   silent = silent === true;
-  this.setState(this.getBounds(), silent);
+  this.setState(this.getBounds(true), silent);
 };
 
 StickyState.prototype.updateFixedOffset = function() {
@@ -270,6 +271,7 @@ StickyState.prototype.removeResizeHandler = function() {
 };
 
 StickyState.prototype.onScroll = function(e) {
+  this.updateBounds(true);
   this.updateStickyState(false);
   if (this.hasOwnScrollTarget && !this.canSticky()) {
     this.updateFixedOffset();
@@ -295,8 +297,8 @@ StickyState.prototype.getStickyState = function() {
   }
 
   var scrollY = this.fastScroll.scrollY;
-  var top = this.state.style.top;
-  var bottom = this.state.style.bottom;
+  var top = this.initialStyle.top;
+  var bottom = this.initialStyle.bottom;
   var sticky = this.state.sticky;
   var absolute = this.state.absolute;
 
