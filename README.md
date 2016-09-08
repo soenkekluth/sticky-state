@@ -21,7 +21,11 @@ IE >= 9, *
 npm install sticky-state
 ```
 ### demo
+## all you can eat
 https://rawgit.com/soenkekluth/sticky-state/master/examples/index.html
+
+##headroom style
+https://rawgit.com/soenkekluth/sticky-state/master/examples/headroom.html
 
 ### css
 Your css should contain the following lines: 
