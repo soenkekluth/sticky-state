@@ -74,7 +74,7 @@ export default class StickyState extends EventDispatcher {
 
     super();
 
-    if (element instanceof NodeList) {
+    if (element instanceof window.NodeList) {
       if(element.length > 1){
         return StickyState.apply(element, options);
       }else{

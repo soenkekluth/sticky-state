@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>StickyState</title>
+
+
+    <style>
+      html {
+        box-sizing: border-box;
+      }
+
+      *, *:before, *:after {
+        box-sizing: inherit;
+      }
+
+      html,
+      body {
+        padding: 0;
+        margin: 0;
+      }
+      /* Logo */
+      .header {
+        background: #247201;
+      }
+      #fg-logo {
+        text-indent: -9999px;
+        margin: 0 auto;
+        width: 287px;
+        height: 52px;
+      }
+      @media (-webkit-min-device-pixel-ratio: 1.5), (min-device-pixel-ratio: 1.5){
+        #fg-logo {
+          background-size: 287px 52px;
+        }
+      }
+      /* Demo CSS */
+      body {
+        font-family: sans-serif;
+        color: #444;
+
+
+      }
+
+
+      .center{
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 0 30px;
+      }
+
+      .top,
+      .bottom {
+        text-align: center;
+        border: solid black;
+        border-width: 1px 0;
+        padding: 1em;
+        width: 100%;
+        max-width: 540px;
+        -moz-box-sizing: border-box;
+        -webkit-box-sizing: border-box;
+        box-sizing: border-box;
+      }
+
+      .bottom .state,
+      .top .state{
+        margin-top: 0.5em;
+      }
+      .bottom .state::after,
+      .top .state::after{
+        content: "static";
+        font-weight: bold;
+      }
+
+      .bottom .scroll::after,
+      .top .scroll::after{
+        content: "none";
+        font-weight: bold;
+      }
+
+      .bottom.is-sticky .state::after,
+      .top.is-sticky .state::after{
+        content: "is-sticky";
+      }
+
+      .bottom.sticky-scroll-down.is-sticky .scroll::after,
+      .top.sticky-scroll-down.is-sticky .scroll::after{
+        content: "down";
+      }
+      .bottom.sticky-scroll-up.is-sticky .scroll::after,
+      .top.sticky-scroll-up.is-sticky .scroll::after{
+        content: "up";
+      }
+
+      .top {
+        top: 0;
+      }
+      .bottom {
+        bottom: 0;
+      }
+      #top-a {
+        top: 32px;
+      }
+      #bottom-b {
+        bottom: 16px;
+      }
+
+      /* Demo Colors */
+      #top-a,
+      #bottom-a {
+        background-color: #f00;
+        background-color: rgba(255,0,0,.6);
+      }
+      #top-b,
+      #bottom-b {
+        background-color: #0f0;
+        background-color: rgba(0,255,0,.6);
+      }
+      .container {
+        background-color: #999;
+      }
+
+      .sticky {
+        position: -webkit-sticky;
+        position: -moz-sticky;
+        position: -ms-sticky;
+        position: -o-sticky;
+        position: sticky;
+      }
+
+      .sticky.sticky-fixed.is-sticky {
+        position: fixed;
+        -webkit-backface-visibility: hidden;
+                backface-visibility: hidden;
+      }
+
+      .sticky.sticky-fixed.is-absolute{
+        position: absolute;
+      }
+
+
+    </style>
+  </head>
+  <body>
+    <div class="center">
+    <h2>StickyState</h2>
+    <small id="output"></small>
+    <p>A test page for the <a href="https://github.com/soenkekluth/sticky-state">StickyState project</a></p>
+    <small><p>markup and styles of this document are mostly copied from <a href="http://filamentgroup.github.io/fixed-sticky/demos/demo.html">filamentgroup</a></p></small>
+
+
+
+    <div class="container" style="height: 600px; padding-top: 100px;">
+      <div class="top sticky" id="top-a">
+        Fixed to viewport top A.
+        <div class="state">state: </div>
+        <div class="scroll">scrolling: </div>
+      </div>
+    </div>
+    </div>
+  <div>
+    <hr>
+  <div style="padding-top:5%; padding-bottom:5%; text-align:center">
+    spacer for resize testing
+    </div>
+    <hr>
+  </div>
+    <div class="center">
+    <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Fuga ut, maxime reiciendis ab pariatur eaque, suscipit esse tempora nesciunt atque assumenda a, consequatur ex et illo qui accusamus facere quis ipsam tenetur. Eaque molestias quo laudantium odio! Velit nobis, consequatur.</p>
+
+    <div class="top sticky" id="top-b">
+      Fixed to viewport top B.
+      <div class="state">state: </div>
+      <div class="scroll">scrolling: </div>
+    </div>
+
+    <p>And now, some fake content to allow scrolling...</p>
+
+    <p><strong>Pellentesque habitant morbi tristique</strong> senectus et netus et malesuada fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam egestas semper. <em>Aenean ultricies mi vitae est.</em> Mauris placerat eleifend leo. Quisque sit amet est et sapien ullamcorper pharetra. Vestibulum erat wisi, condimentum sed, <code>commodo vitae</code>, ornare sit amet, wisi. Aenean fermentum, elit eget tincidunt condimentum, eros ipsum rutrum orci, sagittis tempus lacus enim ac dui. <a href="#">Donec non enim</a> in turpis pulvinar facilisis. Ut felis.</p>
+
+    <h2>Header Level 2</h2>
+
+    <ol>
+       <li>Lorem ipsum dolor sit amet, consectetuer adipiscing elit.</li>
+       <li>Aliquam tincidunt mauris eu risus.</li>
+    </ol>
+
+    <blockquote><p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus magna. Cras in mi at felis aliquet congue. Ut a est eget ligula molestie gravida. Curabitur massa. Donec eleifend, libero at sagittis mollis, tellus est malesuada tellus, at luctus turpis elit sit amet quam. Vivamus pretium ornare est.</p></blockquote>
+
+    <h3>Header Level 3</h3>
+
+    <ul>
+       <li>Lorem ipsum dolor sit amet, consectetuer adipiscing elit.</li>
+       <li>Aliquam tincidunt mauris eu risus.</li>
+    </ul>
+
+
+    <p><strong>Pellentesque habitant morbi tristique</strong> senectus et netus et malesuada fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam egestas semper. <em>Aenean ultricies mi vitae est.</em> Mauris placerat eleifend leo. Quisque sit amet est et sapien ullamcorper pharetra. Vestibulum erat wisi, condimentum sed, <code>commodo vitae</code>, ornare sit amet, wisi. Aenean fermentum, elit eget tincidunt condimentum, eros ipsum rutrum orci, sagittis tempus lacus enim ac dui. <a href="#">Donec non enim</a> in turpis pulvinar facilisis. Ut felis.</p>
+
+    <h2>Header Level 2</h2>
+
+    <ol>
+       <li>Lorem ipsum dolor sit amet, consectetuer adipiscing elit.</li>
+       <li>Aliquam tincidunt mauris eu risus.</li>
+    </ol>
+
+    <div id="bottom-b" class="bottom sticky">
+      Fixed to viewport bottom B (1em above).
+      <div class="state">state: </div>
+      <div class="scroll">scroll: </div>
+    </div>
+    <div class="container">
+      <div style="height: 600px"></div>
+      <div id="bottom-a" class="bottom sticky">
+        Fixed to viewport bottom A.
+        <div class="state">state: </div>
+        <div class="scroll">scroll: </div>
+      </div>
+    </div>
+
+    <blockquote><p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus magna. Cras in mi at felis aliquet congue. Ut a est eget ligula molestie gravida. Curabitur massa. Donec eleifend, libero at sagittis mollis, tellus est malesuada tellus, at luctus turpis elit sit amet quam. Vivamus pretium ornare est.</p></blockquote>
+
+    <h3>Header Level 3</h3>
+
+    <ul>
+       <li>Lorem ipsum dolor sit amet, consectetuer adipiscing elit.</li>
+       <li>Aliquam tincidunt mauris eu risus.</li>
+    </ul>
+
+    <h2>Sticky with overflow</h2>
+    <p>fully supported. native and polyfilled</p>
+
+    <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Sint quaerat excepturi, amet. Corporis pariatur illum ab, ea placeat delectus impedit.</p>
+
+    <div class="container" style="height: 600px; overflow: auto; -webkit-overflow-scrolling: touch;">
+      <p style="padding:10px">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Sint quaerat excepturi, amet. Corporis pariatur illum ab, ea placeat delectus impedit.</p>
+      <p style="padding:10px">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Sint quaerat excepturi, amet. Corporis pariatur illum ab, ea placeat delectus impedit.</p>
+      <div class="top sticky" style="top: 3.2em;">
+        Fixed to overflow div top.
+        <div class="state">state: </div>
+        <div class="scroll">scrolling: </div>
+      </div>
+      <p style="padding:10px">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Sint quaerat excepturi, amet. Corporis pariatur illum ab, ea placeat delectus impedit.</p>
+      <p style="padding:10px">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Sint quaerat excepturi, amet. Corporis pariatur illum ab, ea placeat delectus impedit.</p>
+      <div style="height: 1000px"></div>
+    </div>
+
+    <p><strong>Pellentesque habitant morbi tristique</strong> senectus et netus et malesuada fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam egestas semper. <em>Aenean ultricies mi vitae est.</em> Mauris placerat eleifend leo. Quisque sit amet est et sapien ullamcorper pharetra. Vestibulum erat wisi, condimentum sed, <code>commodo vitae</code>, ornare sit amet, wisi. Aenean fermentum, elit eget tincidunt condimentum, eros ipsum rutrum orci, sagittis tempus lacus enim ac dui. <a href="#">Donec non enim</a> in turpis pulvinar facilisis. Ut felis.</p>
+
+    <h2>Header Level 2</h2>
+
+    <ol>
+       <li>Lorem ipsum dolor sit amet, consectetuer adipiscing elit.</li>
+       <li>Aliquam tincidunt mauris eu risus.</li>
+    </ol>
+
+    <blockquote><p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus magna. Cras in mi at felis aliquet congue. Ut a est eget ligula molestie gravida. Curabitur massa. Donec eleifend, libero at sagittis mollis, tellus est malesuada tellus, at luctus turpis elit sit amet quam. Vivamus pretium ornare est.</p></blockquote>
+
+    <h3>Header Level 3</h3>
+
+    <ul>
+       <li>Lorem ipsum dolor sit amet, consectetuer adipiscing elit.</li>
+       <li>Aliquam tincidunt mauris eu risus.</li>
+    </ul>
+
+
+    <p><strong>Pellentesque habitant morbi tristique</strong> senectus et netus et malesuada fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam egestas semper. <em>Aenean ultricies mi vitae est.</em> Mauris placerat eleifend leo. Quisque sit amet est et sapien ullamcorper pharetra. Vestibulum erat wisi, condimentum sed, <code>commodo vitae</code>, ornare sit amet, wisi. Aenean fermentum, elit eget tincidunt condimentum, eros ipsum rutrum orci, sagittis tempus lacus enim ac dui. <a href="#">Donec non enim</a> in turpis pulvinar facilisis. Ut felis.</p>
+
+    <h2>Header Level 2</h2>
+
+    <ol>
+       <li>Lorem ipsum dolor sit amet, consectetuer adipiscing elit.</li>
+       <li>Aliquam tincidunt mauris eu risus.</li>
+    </ol>
+
+    <blockquote><p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus magna. Cras in mi at felis aliquet congue. Ut a est eget ligula molestie gravida. Curabitur massa. Donec eleifend, libero at sagittis mollis, tellus est malesuada tellus, at luctus turpis elit sit amet quam. Vivamus pretium ornare est.</p></blockquote>
+
+    <h3>Header Level 3</h3>
+
+    <ul>
+       <li>Lorem ipsum dolor sit amet, consectetuer adipiscing elit.</li>
+       <li>Aliquam tincidunt mauris eu risus.</li>
+    </ul>
+
+
+    <p><strong>Pellentesque habitant morbi tristique</strong> senectus et netus et malesuada fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam egestas semper. <em>Aenean ultricies mi vitae est.</em> Mauris placerat eleifend leo. Quisque sit amet est et sapien ullamcorper pharetra. Vestibulum erat wisi, condimentum sed, <code>commodo vitae</code>, ornare sit amet, wisi. Aenean fermentum, elit eget tincidunt condimentum, eros ipsum rutrum orci, sagittis tempus lacus enim ac dui. <a href="#">Donec non enim</a> in turpis pulvinar facilisis. Ut felis.</p>
+
+    <h2>Header Level 2</h2>
+
+    <ol>
+      <li>Lorem ipsum dolor sit amet, consectetuer adipiscing elit.</li>
+      <li>Aliquam tincidunt mauris eu risus.</li>
+    </ol>
+
+    </div>
+
+
+  </body>
+</html>
