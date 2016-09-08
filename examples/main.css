@@ -47,11 +47,35 @@ body {
   -webkit-box-sizing: border-box;
   box-sizing: border-box;
 }
-.top.is-sticky::after{
-  content: " << is-sticky >>";
+
+.bottom .state,
+.top .state{
+  margin-top: 0.5em;
 }
-.bottom.is-sticky::after{
-  content: " << is-sticky >>";
+.bottom .state::after,
+.top .state::after{
+  content: "static";
+  font-weight: bold;
+}
+
+.bottom .scroll::after,
+.top .scroll::after{
+  content: "none";
+  font-weight: bold;
+}
+
+.bottom.is-sticky .state::after,
+.top.is-sticky .state::after{
+  content: "is-sticky";
+}
+
+.bottom.sticky-scroll-down.is-sticky .scroll::after,
+.top.sticky-scroll-down.is-sticky .scroll::after{
+  content: "down";
+}
+.bottom.sticky-scroll-up.is-sticky .scroll::after,
+.top.sticky-scroll-up.is-sticky .scroll::after{
+  content: "up";
 }
 
 .top {

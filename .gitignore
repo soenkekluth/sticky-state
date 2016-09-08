@@ -5,3 +5,4 @@ npm-debug.log
 
 # Project folders to ignore
 node_modules
+.tern-port

@@ -17,6 +17,8 @@
     <div class="container" style="height: 600px; padding-top: 100px;">
       <div class="top sticky" id="top-a">
         Fixed to viewport top A.
+        <div class="state">state: </div>
+        <div class="scroll">scrolling: </div>
       </div>
     </div>
 
@@ -24,6 +26,8 @@
 
     <div class="top sticky" id="top-b">
       Fixed to viewport top B.
+      <div class="state">state: </div>
+      <div class="scroll">scrolling: </div>
     </div>
 
     <p>And now, some fake content to allow scrolling...</p>
@@ -58,11 +62,15 @@
 
     <div id="bottom-b" class="bottom sticky">
       Fixed to viewport bottom B (1em above).
+      <div class="state">state: </div>
+      <div class="scroll">scroll: </div>
     </div>
     <div class="container">
       <div style="height: 600px"></div>
       <div id="bottom-a" class="bottom sticky">
         Fixed to viewport bottom A.
+        <div class="state">state: </div>
+        <div class="scroll">scroll: </div>
       </div>
     </div>
 
@@ -85,6 +93,8 @@
       <p style="padding:10px">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Sint quaerat excepturi, amet. Corporis pariatur illum ab, ea placeat delectus impedit.</p>
       <div class="top sticky" style="top: 3.2em;">
         Fixed to overflow div top.
+        <div class="state">state: </div>
+        <div class="scroll">scrolling: </div>
       </div>
       <p style="padding:10px">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Sint quaerat excepturi, amet. Corporis pariatur illum ab, ea placeat delectus impedit.</p>
       <p style="padding:10px">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Sint quaerat excepturi, amet. Corporis pariatur illum ab, ea placeat delectus impedit.</p>
@@ -141,7 +151,13 @@
     <script>
     var out = StickyState.native() ? 'native position:sticky supported. state is added' : 'position:sticky is polyfilled';
     document.querySelector('#output').innerText = out;
-    StickyState.apply(document.querySelectorAll('.sticky'));
+
+    StickyState.apply(document.querySelectorAll('.sticky'), {
+      scrollClass:{
+        down: 'sticky-scroll-down',
+        up: 'sticky-scroll-up'
+      }
+    });
     </script>
 
   </body>
