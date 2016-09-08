@@ -1,0 +1,66 @@
+{
+  "env": {
+
+    "development": {
+
+      "presets": [
+        "stage-0",
+        "es2015"
+      ],
+
+      "plugins": [
+        "transform-class-properties",
+        "transform-decorators-legacy",
+        "add-module-exports"
+      ],
+      "sourceMaps": "inline"
+    },
+
+    "production": {
+
+      "presets": [
+        "stage-0",
+        "es2015"
+      ],
+
+      "minified": true,
+      "comments": false,
+
+      "plugins": [
+        "transform-class-properties",
+        "transform-class-constructor-call",
+        "transform-decorators-legacy",
+        "transform-remove-console", [
+          "transform-es2015-classes", {
+            "loose": true
+          }
+        ],
+        "transform-proto-to-assign",
+        "add-module-exports"
+      ]
+    },
+
+    "publish": {
+
+      "presets": [
+        "stage-0",
+        "es2015"
+      ],
+
+      "comments": false,
+
+      "plugins": [
+        "transform-class-properties",
+        "transform-class-constructor-call",
+        "transform-decorators-legacy",
+        "transform-remove-console", [
+          "transform-es2015-classes", {
+            "loose": true
+          }
+        ],
+        "transform-proto-to-assign",
+        "add-module-exports"
+      ]
+    }
+  }
+}

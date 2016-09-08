@@ -1,12 +1,10 @@
-var assign = require('object-assign');
-var className = require('classname');
-var Scroll = require('scroll-events');
+import assign from 'object-assign';
+import classname from 'classname';
+import Scroll from 'scroll-events';
+import EventDispatcher from 'eventdispatcher';
 
-var _globals = {
-  featureTested: false
-};
 
-var defaults = {
+const defaults = {
   disabled: false,
   className: 'sticky',
   stateClassName: 'is-sticky',
@@ -16,14 +14,14 @@ var defaults = {
   scrollClass: {
     down: null,
     up: null,
-    none: null
+    none: null,
+    persist: false
   }
 };
 
 function getScrollPosition() {
   return (window.scrollY || window.pageYOffset || 0);
 }
-
 
 function getAbsolutBoundingRect(el, fixedHeight) {
   var rect = el.getBoundingClientRect();
@@ -67,414 +65,486 @@ function getPreviousElementSibling(el) {
   return prev;
 }
 
-var StickyState = function(element, options) {
-  if (!element) {
-    throw new Error('StickyState needs a DomElement');
-  }
+export default class StickyState extends EventDispatcher {
 
-  this.el = element;
-  this.options = assign({}, defaults, options);
-
-  this.setState({
-    sticky: false,
-    absolute: false,
-    fixedOffset: '',
-    offsetHeight: 0,
-    bounds: {
-      top: null,
-      bottom: null,
-      height: null,
-      width: null
-    },
-    restrict: {
-      top: null,
-      bottom: null,
-      height: null,
-      width: null
-    },
-    style: {
-      top: null,
-      bottom: null
-    },
-    disabled: this.options.disabled
-  }, true);
-
-  this.scrollTarget = (window.getComputedStyle(this.el.parentNode).overflow !== 'auto' ? window : this.el.parentNode);
-  this.hasOwnScrollTarget = this.scrollTarget !== window;
-  if (this.hasOwnScrollTarget) {
-    this.updateFixedOffset = this.updateFixedOffset.bind(this);
-  }
-  this.firstRender = true;
-  this.resizeHandler = null;
-  this.scroll = null;
-  this.wrapper = null;
-
-  this.render = this.render.bind(this);
-
-  this.addSrollHandler();
-  this.addResizeHandler();
-  this.render();
-};
-
-StickyState.prototype.setState = function(newState, silent) {
-  this.lastState = this.state || newState;
-  this.state = assign({}, this.state, newState);
-  if (silent !== true) {
-    this.render();
-  }
-};
-
-StickyState.prototype.getBoundingClientRect = function() {
-  return this.el.getBoundingClientRect();
-};
-
-StickyState.prototype.getBounds = function(noCache) {
-
-  var clientRect = this.getBoundingClientRect();
-  var offsetHeight = Scroll.documentHeight;
-
-  if (noCache !== true && this.state.bounds.height !== null) {
-    if (this.state.offsetHeight === offsetHeight && clientRect.height === this.state.bounds.height) {
-      return {
-        offsetHeight: offsetHeight,
-        style: this.state.style,
-        bounds: this.state.bounds,
-        restrict: this.state.restrict
-      };
+  constructor(element, options) {
+    if (!element) {
+      throw new Error('StickyState needs a DomElement');
     }
-  }
 
-  var style = getPositionStyle(this.el);
-  var child = this.wrapper || this.el;
-  var rect;
-  var restrict;
-  var offset = 0;
+    super();
 
-  if (!this.canSticky()) {
-    rect = getAbsolutBoundingRect(child, clientRect.height);
-    if (this.hasOwnScrollTarget) {
-      var parentRect = getAbsolutBoundingRect(this.scrollTarget);
-      offset = this.scroll.scrollY;
-      rect = addBounds(rect, parentRect);
-      restrict = parentRect;
-      restrict.top = 0;
-      restrict.height = this.scrollTarget.scrollHeight || restrict.height;
-      restrict.bottom = restrict.height;
-    }
-  } else {
-    var elem = getPreviousElementSibling(child);
-    offset = 0;
-
-    if (elem) {
-      offset = parseInt(window.getComputedStyle(elem)['margin-bottom']);
-      offset = offset || 0;
-      rect = getAbsolutBoundingRect(elem);
-      if (this.hasOwnScrollTarget) {
-        rect = addBounds(rect, getAbsolutBoundingRect(this.scrollTarget));
-        offset += this.scroll.scrollY;
+    if (element instanceof NodeList) {
+      if(element.length > 1){
+        return StickyState.apply(element, options);
+      }else{
+        element = element[0];
       }
-      rect.top = rect.bottom + offset;
-
-    } else {
-      elem = child.parentNode;
-      offset = parseInt(window.getComputedStyle(elem)['padding-top']);
-      offset = offset || 0;
-      rect = getAbsolutBoundingRect(elem);
-      if (this.hasOwnScrollTarget) {
-        rect = addBounds(rect, getAbsolutBoundingRect(this.scrollTarget));
-        offset += this.scroll.scrollY;
-      }
-      rect.top = rect.top + offset;
     }
+
+    this.el = element;
+    if(options.scrollClass){
+      options.scrollClass = assign({}, defaults.scrollClass, options.scrollClass);
+    }
+    this.options = assign({}, defaults, options);
+
+
+    this.setState({
+      sticky: false,
+      absolute: false,
+      fixedOffset: '',
+      offsetHeight: 0,
+      bounds: {
+        top: null,
+        bottom: null,
+        height: null,
+        width: null
+      },
+      restrict: {
+        top: null,
+        bottom: null,
+        height: null,
+        width: null
+      },
+      style: {
+        top: null,
+        bottom: null
+      },
+      disabled: this.options.disabled
+    }, true);
+
+    this.scrollTarget = (window.getComputedStyle(this.el.parentNode).overflow !== 'auto' ? window : this.el.parentNode);
+    this.hasOwnScrollTarget = this.scrollTarget !== window;
     if (this.hasOwnScrollTarget) {
-      restrict = getAbsolutBoundingRect(this.scrollTarget);
-      restrict.top = 0;
-      restrict.height = this.scrollTarget.scrollHeight || restrict.height;
-      restrict.bottom = restrict.height;
+      this.updateFixedOffset = this.updateFixedOffset.bind(this);
     }
 
-    rect.height = child.clientHeight;
-    rect.width = child.clientWidth;
-    rect.bottom = rect.top + rect.height;
-  }
-
-  restrict = restrict || getAbsolutBoundingRect(child.parentNode);
-
-  return {
-    offsetHeight: offsetHeight,
-    style: style,
-    bounds: rect,
-    restrict: restrict
-  };
-};
-
-
-StickyState.prototype.updateBounds = function(silent, noCache) {
-  silent = silent === true;
-  noCache = noCache === false;
-  this.setState(this.getBounds(noCache), silent);
-};
-
-StickyState.prototype.updateFixedOffset = function() {
-  this.lastState.fixedOffset = this.state.fixedOffset;
-  if (this.state.sticky) {
-    this.state.fixedOffset = this.scrollTarget.getBoundingClientRect().top + 'px';
-  } else {
-    this.state.fixedOffset = '';
-  }
-  if (this.lastState.fixedOffset !== this.state.fixedOffset) {
-    this.render();
-  }
-};
-
-StickyState.prototype.canSticky = function() {
-
-  return StickyState.native();
-};
-
-StickyState.prototype.addSrollHandler = function() {
-  if (!this.scroll) {
-    var hasScrollTarget = Scroll.hasScrollTarget(this.scrollTarget);
-
-    this.scroll = Scroll.getInstance(this.scrollTarget);
-    this.onScroll = this.onScroll.bind(this);
-    this.onScrollDirection = this.onScrollDirection.bind(this);
-    this.scroll.on('scroll:start', this.onScroll);
-    this.scroll.on('scroll:progress', this.onScroll);
-    this.scroll.on('scroll:stop', this.onScroll);
-    this.scroll.on('scroll:up', this.onScrollDirection);
-    this.scroll.on('scroll:down', this.onScrollDirection);
-    this.scroll.on('scroll:stop', this.onScrollDirection);
-
-    if (hasScrollTarget && this.scroll.scrollY > 0) {
-      this.scroll.trigger('scroll:progress');
-    }
-  }
-};
-
-StickyState.prototype.removeSrollHandler = function() {
-  if (this.scroll) {
-    this.scroll.off('scroll:start', this.onScroll);
-    this.scroll.off('scroll:progress', this.onScroll);
-    this.scroll.off('scroll:stop', this.onScroll);
-    this.scroll.off('scroll:up', this.onScrollDirection);
-    this.scroll.off('scroll:down', this.onScrollDirection);
-    this.scroll.off('scroll:stop', this.onScrollDirection);
-    this.scroll.destroy();
-    this.scroll = null;
-  }
-};
-
-StickyState.prototype.addResizeHandler = function() {
-  if (!this.resizeHandler) {
-    this.resizeHandler = this.onResize.bind(this);
-    window.addEventListener('resize', this.resizeHandler, false);
-    window.addEventListener('orientationchange', this.resizeHandler, false);
-  }
-};
-
-StickyState.prototype.removeResizeHandler = function() {
-  if (this.resizeHandler) {
-    window.removeEventListener('resize', this.resizeHandler);
-    window.removeEventListener('orientationchange', this.resizeHandler);
+    this.firstRender = true;
     this.resizeHandler = null;
+    this.scroll = null;
+    this.wrapper = null;
+    this.eventObject = {
+      target: this.el,
+      currentTarget: this
+    };
+
+    this.render = this.render.bind(this);
+
+    this.addSrollHandler();
+    this.addResizeHandler();
+    this.render();
   }
-};
 
 
-StickyState.prototype.addScrollDirectionClass = function(classString) {
-  // return classString;
-  if (this.options.scrollClass.up || this.options.scrollClass.down) {
+  static apply(elements, options) {
+
+    if (elements) {
+      if (elements.length) {
+        const arr = new StickyStateCollection();
+        for (var i = 0; i < elements.length; i++) {
+          arr.push(new StickyState(elements[i], options));
+        }
+        return arr;
+      } else {
+        return new StickyState(elements, options);
+      }
+    }
+    return null;
+  };
+
+  static get native(){
+    return Can.sticky;
+  }
+
+  setState(newState, silent) {
+    this.lastState = this.state || newState;
+    this.state = assign({}, this.state, newState);
+    if (silent !== true) {
+      this.render();
+      this.trigger(this.state.sticky ? 'sticky:on' : 'sticky:off', this.eventObject);
+    }
+  }
+
+  getBoundingClientRect() {
+    return this.el.getBoundingClientRect();
+  }
+
+  getBounds(noCache) {
+
+    var clientRect = this.getBoundingClientRect();
+    var offsetHeight = Scroll.documentHeight;
+    noCache = noCache === true;
+
+    if (noCache !== true && this.state.bounds.height !== null) {
+      if (this.state.offsetHeight === offsetHeight && clientRect.height === this.state.bounds.height) {
+        return {
+          offsetHeight: offsetHeight,
+          style: this.state.style,
+          bounds: this.state.bounds,
+          restrict: this.state.restrict
+        };
+      }
+    }
+
+    var style = noCache ? this.state.style : getPositionStyle(this.el);
+    var child = this.wrapper || this.el;
+    var rect;
+    var restrict;
+    var offset = 0;
+
+    if (!Can.sticky) {
+      rect = getAbsolutBoundingRect(child, clientRect.height);
+      if (this.hasOwnScrollTarget) {
+        var parentRect = getAbsolutBoundingRect(this.scrollTarget);
+        offset = this.scroll.y;
+        rect = addBounds(rect, parentRect);
+        restrict = parentRect;
+        restrict.top = 0;
+        restrict.height = this.scroll.scrollHeight || restrict.height;
+        restrict.bottom = restrict.height;
+      }
+    } else {
+      var elem = getPreviousElementSibling(child);
+      offset = 0;
+
+      if (elem) {
+        offset = parseInt(window.getComputedStyle(elem)['margin-bottom']);
+        offset = offset || 0;
+        rect = getAbsolutBoundingRect(elem);
+        if (this.hasOwnScrollTarget) {
+          rect = addBounds(rect, getAbsolutBoundingRect(this.scrollTarget));
+          offset += this.scroll.y;
+        }
+        rect.top = rect.bottom + offset;
+
+      } else {
+        elem = child.parentNode;
+        offset = parseInt(window.getComputedStyle(elem)['padding-top']);
+        offset = offset || 0;
+        rect = getAbsolutBoundingRect(elem);
+        if (this.hasOwnScrollTarget) {
+          rect = addBounds(rect, getAbsolutBoundingRect(this.scrollTarget));
+          offset += this.scroll.scrollY;
+        }
+        rect.top = rect.top + offset;
+      }
+      if (this.hasOwnScrollTarget) {
+        restrict = getAbsolutBoundingRect(this.scrollTarget);
+        restrict.top = 0;
+        restrict.height = this.scroll.scrollHeight || restrict.height;
+        restrict.bottom = restrict.height;
+      }
+
+      rect.height = child.clientHeight;
+      rect.width = child.clientWidth;
+      rect.bottom = rect.top + rect.height;
+    }
+
+    restrict = restrict || getAbsolutBoundingRect(child.parentNode);
+
+    return {
+      offsetHeight: offsetHeight,
+      style: style,
+      bounds: rect,
+      restrict: restrict
+    };
+  }
+
+  updateBounds(silent, noCache) {
+    silent = silent === true;
+    noCache = noCache === true;
+    this.setState(this.getBounds(noCache), silent);
+  }
+
+  updateFixedOffset() {
+    this.lastState.fixedOffset = this.state.fixedOffset;
+    if (this.state.sticky) {
+      this.state.fixedOffset = this.scrollTarget.getBoundingClientRect().top + 'px';
+    } else {
+      this.state.fixedOffset = '';
+    }
+    if (this.lastState.fixedOffset !== this.state.fixedOffset) {
+      this.render();
+    }
+  }
+
+  addSrollHandler() {
+    if (!this.scroll) {
+      var hasScrollTarget = Scroll.hasScrollTarget(this.scrollTarget);
+
+      this.scroll = Scroll.getInstance(this.scrollTarget);
+      this.onScroll = this.onScroll.bind(this);
+      this.onScrollDirection = this.onScrollDirection.bind(this);
+      this.scroll.on('scroll:start', this.onScroll);
+      this.scroll.on('scroll:progress', this.onScroll);
+      this.scroll.on('scroll:stop', this.onScroll);
+      this.scroll.on('scroll:up', this.onScrollDirection);
+      this.scroll.on('scroll:down', this.onScrollDirection);
+      if(!this.options.scrollClass.persist){
+        this.scroll.on('scroll:stop', this.onScrollDirection);
+      }
+
+      if (hasScrollTarget && this.scroll.scrollY > 0) {
+        this.scroll.trigger('scroll:progress');
+      }
+    }
+  }
+
+  removeSrollHandler() {
+    if (this.scroll) {
+      this.scroll.off('scroll:start', this.onScroll);
+      this.scroll.off('scroll:progress', this.onScroll);
+      this.scroll.off('scroll:stop', this.onScroll);
+      this.scroll.off('scroll:up', this.onScrollDirection);
+      this.scroll.off('scroll:down', this.onScrollDirection);
+      this.scroll.off('scroll:stop', this.onScrollDirection);
+      this.scroll.destroy();
+      this.scroll = null;
+    }
+  }
+
+  addResizeHandler() {
+    if (!this.resizeHandler) {
+      this.resizeHandler = this.onResize.bind(this);
+      window.addEventListener('resize', this.resizeHandler, false);
+      window.addEventListener('orientationchange', this.resizeHandler, false);
+    }
+  }
+
+  removeResizeHandler() {
+    if (this.resizeHandler) {
+      window.removeEventListener('resize', this.resizeHandler);
+      window.removeEventListener('orientationchange', this.resizeHandler);
+      this.resizeHandler = null;
+    }
+  }
+
+
+  getScrollClassObj(obj){
+    obj = obj || {};
     var direction = this.scroll.directionY;
-      var obj = {};
+    if (this.options.scrollClass.up || this.options.scrollClass.down) {
       obj[this.options.scrollClass.up] = direction < 0;
       obj[this.options.scrollClass.down] = direction > 0;
-      return classString = className(classString, obj);
+    }
+    return obj;
   }
-  return classString;
+
+
+  onScrollDirection(e) {
+    if (this.state.sticky || e.type === Scroll.EVENT_SCROLL_STOP) {
+      this.el.className = classname(this.el.className, this.getScrollClassObj());
+    }
+  }
+
+  onScroll(e) {
+    this.updateStickyState(false);
+    if (this.hasOwnScrollTarget && !Can.sticky) {
+      this.updateFixedOffset();
+      if (this.state.sticky && !this.hasWindowScrollListener) {
+        this.hasWindowScrollListener = true;
+        Scroll.getInstance(window).on('scroll:progress', this.updateFixedOffset);
+      } else if (!this.state.sticky && this.hasWindowScrollListener) {
+        this.hasWindowScrollListener = false;
+        Scroll.getInstance(window).off('scroll:progress', this.updateFixedOffset);
+      }
+    }
+  }
+
+  update() {
+    this.updateBounds(true, true);
+    this.updateStickyState(false);
+  }
+
+  onResize(e) {
+    this.update();
+  }
+
+  getStickyState() {
+
+    if (this.state.disabled) {
+      return {sticky: false, absolute: false};
+    }
+
+    var scrollY = this.scroll.y;
+    var top = this.state.style.top;
+    var bottom = this.state.style.bottom;
+    var sticky = this.state.sticky;
+    var absolute = this.state.absolute;
+
+    if (top !== null) {
+      var offsetBottom = this.state.restrict.bottom - this.state.bounds.height - top;
+      top = this.state.bounds.top - top;
+      if (this.state.sticky === false && scrollY >= top && scrollY <= offsetBottom) {
+        sticky = true;
+        absolute = false;
+      } else if (this.state.sticky && (scrollY < top || scrollY > offsetBottom)) {
+        sticky = false;
+        absolute = scrollY > offsetBottom;
+      }
+    } else if (bottom !== null) {
+
+      scrollY += window.innerHeight;
+      var offsetTop = this.state.restrict.top + this.state.bounds.height - bottom;
+      bottom = this.state.bounds.bottom + bottom;
+
+      if (this.state.sticky === false && scrollY <= bottom && scrollY >= offsetTop) {
+        sticky = true;
+        absolute = false;
+      } else if (this.state.sticky && (scrollY > bottom || scrollY < offsetTop)) {
+        sticky = false;
+        absolute = scrollY <= offsetTop;
+      }
+    }
+    return {sticky: sticky, absolute: absolute};
+  }
+
+  updateStickyState(silent) {
+    var values = this.getStickyState();
+
+    if (values.sticky !== this.state.sticky || values.absolute !== this.state.absolute) {
+      silent = silent === true;
+      values = assign(values, this.getBounds());
+      this.setState(values, silent);
+    }
+  }
+
+  render() {
+
+    var className = this.el.className;
+
+    var classNameObj = {};
+
+    if (this.firstRender) {
+      this.firstRender = false;
+
+      if (!Can.sticky) {
+        this.wrapper = document.createElement('div');
+        this.wrapper.className = this.options.wrapperClass;
+        var parent = this.el.parentNode;
+        if (parent) {
+          parent.insertBefore(this.wrapper, this.el);
+        }
+        this.wrapper.appendChild(this.el);
+        classNameObj[this.options.fixedClass] = true;
+      }
+
+      this.updateBounds(true);
+      this.updateStickyState(true);
+    }
+
+    if (!Can.sticky) {
+      var height = (this.state.disabled || this.state.bounds.height === null || (!this.state.sticky && !this.state.absolute)) ? 'auto' : this.state.bounds.height + 'px';
+      this.wrapper.style.height = height;
+
+      if (this.state.absolute !== this.lastState.absolute) {
+        this.wrapper.style.position = this.state.absolute ? 'relative' : '';
+
+        classNameObj[this.options.absoluteClass] = this.state.absolute;
+        // className = className.indexOf(this.options.absoluteClass) === -1 && this.state.absolute ? className + (' ' + this.options.absoluteClass) : className.split((' ' + this.options.absoluteClass)).join('');
+        this.el.style.marginTop = (this.state.absolute && this.state.style.top !== null) ? (this.state.restrict.height - (this.state.bounds.height + this.state.style.top) + (this.state.restrict.top - this.state.bounds.top)) + 'px' : '';
+        this.el.style.marginBottom = (this.state.absolute && this.state.style.bottom !== null) ? (this.state.restrict.height - (this.state.bounds.height + this.state.style.bottom) + (this.state.restrict.bottom - this.state.bounds.bottom)) + 'px' : '';
+      }
+
+      if (this.hasOwnScrollTarget && !this.state.absolute && this.lastState.fixedOffset !== this.state.fixedOffset) {
+        this.el.style.marginTop = this.state.fixedOffset;
+      }
+    }
+
+
+    classNameObj[this.options.stateClassName] = this.state.sticky;
+    classNameObj =  this.getScrollClassObj(classNameObj);
+    className = classname(className, classNameObj);
+
+    if (this.el.className !== className) {
+      this.el.className = className;
+    }
+
+    return this.el;
+  }
+
 }
 
-StickyState.prototype.onScrollDirection = function(e) {
-  // return;
-  if (this.state.sticky) {
-      var direction = this.scroll.directionY;
-        var obj = {};
-        obj[this.options.scrollClass.up] = direction < 0;
-        obj[this.options.scrollClass.down] = direction > 0;
-        this.el.className = className(this.el.className, obj);
+var _canSticky = null;
+var _passiveEvents = null;
+
+class Can {
+
+  static get sticky() {
+    if (_canSticky !== null) {
+      return _canSticky;
     }
-  }
+    if (typeof window !== 'undefined') {
 
-
-StickyState.prototype.onScroll = function(e) {
-  this.updateStickyState(false);
-  if (this.hasOwnScrollTarget && !this.canSticky()) {
-    this.updateFixedOffset();
-    if (this.state.sticky && !this.hasWindowScrollListener) {
-      this.hasWindowScrollListener = true;
-      Scroll.getInstance(window).on('scroll:progress', this.updateFixedOffset);
-    } else if (!this.state.sticky && this.hasWindowScrollListener) {
-      this.hasWindowScrollListener = false;
-      Scroll.getInstance(window).off('scroll:progress', this.updateFixedOffset);
-    }
-  }
-};
-
-StickyState.prototype.update = function() {
-  this.updateBounds(true, true);
-  this.updateStickyState(false);
-};
-
-
-StickyState.prototype.onResize = function(e) {
-  this.updateBounds(true);
-  this.updateStickyState(false);
-};
-
-StickyState.prototype.getStickyState = function() {
-
-  if (this.state.disabled) {
-    return { sticky: false, absolute: false };
-  }
-
-  var scrollY = this.scroll.scrollY;
-  var top = this.state.style.top;
-  var bottom = this.state.style.bottom;
-  var sticky = this.state.sticky;
-  var absolute = this.state.absolute;
-
-  if (top !== null) {
-    var offsetBottom = this.state.restrict.bottom - this.state.bounds.height - top;
-    top = this.state.bounds.top - top;
-    if (this.state.sticky === false && scrollY >= top && scrollY <= offsetBottom) {
-      sticky = true;
-      absolute = false;
-    } else if (this.state.sticky && (scrollY < top || scrollY > offsetBottom)) {
-      sticky = false;
-      absolute = scrollY > offsetBottom;
-    }
-  } else if (bottom !== null) {
-
-    scrollY += window.innerHeight;
-    var offsetTop = this.state.restrict.top + this.state.bounds.height - bottom;
-    bottom = this.state.bounds.bottom + bottom;
-
-    if (this.state.sticky === false && scrollY <= bottom && scrollY >= offsetTop) {
-      sticky = true;
-      absolute = false;
-    } else if (this.state.sticky && (scrollY > bottom || scrollY < offsetTop)) {
-      sticky = false;
-      absolute = scrollY <= offsetTop;
-    }
-  }
-  return { sticky: sticky, absolute: absolute };
-};
-
-StickyState.prototype.updateStickyState = function(silent) {
-  var values = this.getStickyState();
-
-  if (values.sticky !== this.state.sticky || values.absolute !== this.state.absolute) {
-    silent = silent === true;
-    values = assign(values, this.getBounds());
-    this.setState(values, silent);
-  }
-};
-
-StickyState.prototype.render = function() {
-
-  var className = this.el.className;
-
-  if (this.firstRender) {
-    this.firstRender = false;
-
-    if (!this.canSticky()) {
-      this.wrapper = document.createElement('div');
-      this.wrapper.className = this.options.wrapperClass;
-      var parent = this.el.parentNode;
-      if (parent) {
-        parent.insertBefore(this.wrapper, this.el);
+      if (window.Modernizr && window.Modernizr.hasOwnProperty('csspositionsticky')) {
+        return _globals.canSticky = window.Modernizr.csspositionsticky;
       }
-      this.wrapper.appendChild(this.el);
-      className += (' ' + this.options.fixedClass);
-    }
 
-    this.updateBounds(true);
-    this.updateStickyState(true);
-  }
+      var testEl = document.createElement('div');
+      document.documentElement.appendChild(testEl);
+      var prefixedSticky = ['sticky', '-webkit-sticky', '-moz-sticky', '-ms-sticky', '-o-sticky'];
 
-  if (!this.canSticky()) {
-    var height = (this.state.disabled || this.state.bounds.height === null || (!this.state.sticky && !this.state.absolute)) ? 'auto' : this.state.bounds.height + 'px';
-    this.wrapper.style.height = height;
+      _canSticky = false;
 
-    if (this.state.absolute !== this.lastState.absolute) {
-      this.wrapper.style.position = this.state.absolute ? 'relative' : '';
-
-      className = className.indexOf(this.options.absoluteClass) === -1 && this.state.absolute ? className + (' ' + this.options.absoluteClass) : className.split((' ' + this.options.absoluteClass)).join('');
-      this.el.style.marginTop = (this.state.absolute && this.state.style.top !== null) ? (this.state.restrict.height - (this.state.bounds.height + this.state.style.top) + (this.state.restrict.top - this.state.bounds.top)) + 'px' : '';
-      this.el.style.marginBottom = (this.state.absolute && this.state.style.bottom !== null) ? (this.state.restrict.height - (this.state.bounds.height + this.state.style.bottom) + (this.state.restrict.bottom - this.state.bounds.bottom)) + 'px' : '';
-    }
-
-    if (this.hasOwnScrollTarget && !this.state.absolute && this.lastState.fixedOffset !== this.state.fixedOffset) {
-      this.el.style.marginTop = this.state.fixedOffset;
-    }
-  }
-
-  var hasStateClass = className.indexOf(this.options.stateClassName) > -1;
-  if (this.state.sticky && !hasStateClass) {
-    className += (' ' + this.options.stateClassName);
-  } else if (!this.state.sticky && hasStateClass) {
-    className = className.split((' ' + this.options.stateClassName)).join('');
-  }
-
-  className = this.addScrollDirectionClass(className);
-
-  if (this.el.className !== className) {
-    this.el.className = className;
-  }
-
-  return this.el;
-};
-
-StickyState.native = function() {
-  if (_globals.featureTested) {
-    return _globals.canSticky;
-  }
-  if (typeof window !== 'undefined') {
-
-    _globals.featureTested = true;
-
-    if (window.Modernizr && window.Modernizr.hasOwnProperty('csspositionsticky')) {
-      return _globals.canSticky = window.Modernizr.csspositionsticky;
-    }
-
-    var testEl = document.createElement('div');
-    document.documentElement.appendChild(testEl);
-    var prefixedSticky = ['sticky', '-webkit-sticky', '-moz-sticky', '-ms-sticky', '-o-sticky'];
-
-    _globals.canSticky = false;
-
-    for (var i = 0; i < prefixedSticky.length; i++) {
-      testEl.style.position = prefixedSticky[i];
-      _globals.canSticky = !!window.getComputedStyle(testEl).position.match('sticky');
-      if (_globals.canSticky) {
-        break;
+      for (var i = 0; i < prefixedSticky.length; i++) {
+        testEl.style.position = prefixedSticky[i];
+        _canSticky = !!window.getComputedStyle(testEl).position.match('sticky');
+        if (_canSticky) {
+          break;
+        }
       }
+      document.documentElement.removeChild(testEl);
     }
-    document.documentElement.removeChild(testEl);
-  }
-  return _globals.canSticky;
-};
+    return _canSticky;
+  };
 
-StickyState.apply = function(elements, options) {
-  if (elements) {
-    if (elements.length) {
-      for (var i = 0; i < elements.length; i++) {
-        new StickyState(elements[i], options);
-      }
-    } else {
-      new StickyState(elements, options);
+
+  static get passiveEvents() {
+    if (_passiveEvents !== null) {
+      return _passiveEvents;
+    }
+    try {
+      var opts = Object.defineProperty({}, 'passive', {
+        get: () => {
+          _passiveEvents = true;
+        }
+      });
+      window.addEventListener("test", null, opts);
+    } catch (e) {
+      _passiveEvents = false;
     }
   }
-};
+}
 
-module.exports = StickyState;
+
+class StickyStateCollection extends EventDispatcher {
+
+  constructor() {
+    super();
+    this.items = [];
+  }
+
+
+  push(item) {
+    this.items.push(item);
+  }
+
+
+  addListener(event, listener) {
+
+    var i = -1;
+    while (++i < this.items.length) {
+      this.items[i].addListener(event, listener);
+    }
+    return this;
+  }
+
+  removeListener(event, listener) {
+    var i = -1;
+    while (++i < this.items.length) {
+      this.items[i].removeListener(event, listener);
+    }
+    return this;
+  }
+
+}

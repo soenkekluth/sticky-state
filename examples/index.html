@@ -4,16 +4,19 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <title>StickyState</title>
-    <link rel="stylesheet" href="../style.css">
     <link rel="stylesheet" href="main.css">
-    <script src="../dist/stickystate.js"></script>
+    <link rel="stylesheet" href="../dist/stickystate.css">
+    <script src="../dist/stickystate.browser.js"></script>
   </head>
   <body>
-
+    <div class="center">
     <h2>StickyState</h2>
     <small id="output"></small>
     <p>A test page for the <a href="https://github.com/soenkekluth/sticky-state">StickyState project</a></p>
     <small><p>markup and styles of this document are mostly copied from <a href="http://filamentgroup.github.io/fixed-sticky/demos/demo.html">filamentgroup</a></p></small>
+
+
+
     <div class="container" style="height: 600px; padding-top: 100px;">
       <div class="top sticky" id="top-a">
         Fixed to viewport top A.
@@ -21,7 +24,15 @@
         <div class="scroll">scrolling: </div>
       </div>
     </div>
-
+    </div>
+  <div>
+    <hr>
+  <div style="padding-top:5%; padding-bottom:5%; text-align:center">
+    spacer for resize testing
+    </div>
+    <hr>
+  </div>
+    <div class="center">
     <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Fuga ut, maxime reiciendis ab pariatur eaque, suscipit esse tempora nesciunt atque assumenda a, consequatur ex et illo qui accusamus facere quis ipsam tenetur. Eaque molestias quo laudantium odio! Velit nobis, consequatur.</p>
 
     <div class="top sticky" id="top-b">
@@ -148,16 +159,20 @@
       <li>Aliquam tincidunt mauris eu risus.</li>
     </ol>
 
+    </div>
+
     <script>
-    var out = StickyState.native() ? 'native position:sticky supported. state is added' : 'position:sticky is polyfilled';
+    var out = StickyState.native ? 'native position:sticky supported. state is added' : 'position:sticky is polyfilled';
     document.querySelector('#output').innerText = out;
 
-    StickyState.apply(document.querySelectorAll('.sticky'), {
+    new StickyState(document.querySelectorAll('.sticky'), {
       scrollClass:{
         down: 'sticky-scroll-down',
         up: 'sticky-scroll-up'
       }
-    });
+    })
+    .on('sticky:on', function(e){console.log('sticky:on', e.target.id);})
+    .on('sticky:off', function(e){console.log('sticky:off' ,e.target.id);})
     </script>
 
   </body>
