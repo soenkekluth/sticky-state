@@ -37,16 +37,13 @@
 
   <script>
 
-
   new StickyState(document.querySelector('.headroom'), {
     scrollClass:{
       down: 'headroom-scroll-down',
       up: 'headroom-scroll-up',
       persist: true
     }
-  })
-  .on('sticky:on', function(e){console.log('sticky:on', e.target.id);})
-  .on('sticky:off', function(e){console.log('sticky:off' ,e.target.id);})
+  });
   </script>
 
 
