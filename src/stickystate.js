@@ -306,6 +306,7 @@ export default class StickyState extends EventDispatcher {
   addResizeHandler() {
     if (!this.resizeHandler) {
       this.resizeHandler = this.onResize.bind(this);
+      window.addEventListener('sticky:update', this.resizeHandler, false);
       window.addEventListener('resize', this.resizeHandler, false);
       window.addEventListener('orientationchange', this.resizeHandler, false);
     }
@@ -313,6 +314,7 @@ export default class StickyState extends EventDispatcher {
 
   removeResizeHandler() {
     if (this.resizeHandler) {
+      window.removeEventListener('sticky:update', this.resizeHandler);
       window.removeEventListener('resize', this.resizeHandler);
       window.removeEventListener('orientationchange', this.resizeHandler);
       this.resizeHandler = null;
