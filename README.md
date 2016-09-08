@@ -6,6 +6,8 @@ Today's browsers do not all support the position:sticky feature (which by the wa
 
 Unlike almost all polyfills you can find in the wild, StickyState is highly performant. The calculations are reduced to a minimum by persisting several attributes.
 
+In some cases you also need to know in which direction the user scrolls - for example if you want to hide a sticky header when the user scrolls up. if you set the scrollClass property of the options StickyState will add your choosen classNames to the element when it is sticky and scrolling.
+
 ### Dependencies
 none!
 
