@@ -49,7 +49,7 @@ var StickyState = require('sticky-state');
 new StickyState(yourElement);
 
 //  all elements with class .sticky will have sticky state:
-StickyState.apply(document.querySelectorAll('.sticky'));
+new StickyState(document.querySelectorAll('.sticky'))
 
 // the props you can set:
 var stickyOptions = {
@@ -66,11 +66,12 @@ var stickyOptions = {
 };
 
 // instantiate with options
-new StickyState(yourElement, stickyOptions);
+var stickyElements = new StickyState(document.querySelectorAll('.sticky'), stickyOptions);
 
-// you should use the class name you defined in your options here: 
-StickyState.apply(document.querySelectorAll('.sticky'), stickyOptions);
-```
+// events:
+stickyElements
+  .on('sticky:on', function(e){console.log('sticky:on', e.target);})
+  .on('sticky:off', function(e){console.log('sticky:off' ,e.target);});
 
 ### React Component
 https://github.com/soenkekluth/react-sticky-state
