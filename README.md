@@ -54,7 +54,11 @@ var stickyOptions = {
   stateClassName: 'is-sticky',
   fixedClass:     'sticky-fixed',
   wrapperClass:   'sticky-wrap',
-  absoluteClass:  'is-absolute'
+  absoluteClass:  'is-absolute',
+  scrollClass:{
+    down: 'sticky-scroll-down',
+    up: 'sticky-scroll-up'
+  }
 };
 
 // instantiate with options
