@@ -532,6 +532,11 @@ class StickyStateCollection extends EventDispatcher {
   }
 
 
+  update(){
+    window.dispatchEvent(new Event('sticky:update'));
+  }
+
+
   addListener(event, listener) {
 
     var i = -1;

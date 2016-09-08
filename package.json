@@ -1,6 +1,6 @@
 {
   "name": "sticky-state",
-  "version": "2.0.3",
+  "version": "2.0.4",
   "description": "StickyState is a high performant module making native position:sticky statefull and polyfill the missing sticky browser feature",
   "main": "dist/stickystate.js",
   "jsnext:main": "src/stickystate.js",
