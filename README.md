@@ -72,6 +72,8 @@ var stickyElements = new StickyState(document.querySelectorAll('.sticky'), stick
 stickyElements
   .on('sticky:on', function(e){console.log('sticky:on', e.target);})
   .on('sticky:off', function(e){console.log('sticky:off' ,e.target);});
+  
+```
 
 ### React Component
 https://github.com/soenkekluth/react-sticky-state
