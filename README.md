@@ -2,6 +2,8 @@
 
 StickyState adds state to position:sticky elements and also polyfills the missing native sticky feature.
 
+Dependency free, pure Javascript for IE9+.
+
 Today's browsers do not all support the position:sticky feature (which by the way is being used (polyfilled) on pretty much every site you visit) - moreover the native supported feature itself comes without a readable state. Something like `a:hover => div:sticky` to add different styles to the element in its sticky state - or to read the state if needed in JavaScript. 
 
 Unlike almost all polyfills you can find in the wild, StickyState is highly performant. The calculations are reduced to a minimum by persisting several attributes.
