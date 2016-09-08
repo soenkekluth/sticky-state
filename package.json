@@ -1,17 +1,18 @@
 {
   "name": "sticky-state",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "StickyState is a high performant module making native position:sticky statefull and polyfill the missing sticky browser feature",
   "main": "dist/stickystate.js",
+  "jsnext:main": "src/stickystate.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build-js": "browserify --fast -e src/index.js -d --standalone StickyState -t babelify | derequire | exorcist dist/stickystate.browser.js.map > dist/stickystate.browser.js",
-    "dist-js": "BABEL_ENV=production NODE_ENV=production browserify -e src/index.js --standalone StickyState -t babelify | derequire > dist/stickystate.browser.js",
+    "build-js": "browserify --fast -e src/stickystate.js -d --standalone StickyState -t babelify | derequire | exorcist dist/stickystate.browser.js.map > dist/stickystate.browser.js",
+    "dist-js": "BABEL_ENV=production NODE_ENV=production browserify -e src/stickystate.js --standalone StickyState -t babelify | derequire > dist/stickystate.browser.js",
     "dist-js-min": "uglifyjs -cmv dist/stickystate.browser.js > dist/stickystate.browser.min.js",
     "dist": "cp src/stickystate.css dist/ && npm run dist-js && npm run dist-js-min && npm run build-lib",
     "start": "run-p watch-js server",
     "build-lib": "BABEL_ENV=production babel src -d dist",
-    "watch-js": "watchify -d --poll=100 --fast --standalone StickyState -e src/index.js -t babelify -o 'exorcist dist/stickystate.browser.js.map > dist/stickystate.browser.js' -v",
+    "watch-js": "watchify -d --poll=100 --fast --standalone StickyState -e src/stickystate.js -t babelify -o 'exorcist dist/stickystate.browser.js.map > dist/stickystate.browser.js' -v",
     "server": "browser-sync start --no-ghost-mode --server --directory --files 'examples/**/**, dist/*.js' --startPath examples/index.html"
   },
   "repository": {
@@ -35,9 +36,9 @@
   "homepage": "https://github.com/soenkekluth/sticky-state#readme",
   "dependencies": {
     "classname": "0.0.0",
-    "eventdispatcher": "1.4.0",
+    "eventdispatcher": "1.5.0",
     "object-assign": "4.1.0",
-    "scroll-events": "1.0.6"
+    "scroll-events": "1.0.7"
   },
   "devDependencies": {
     "babel-cli": "6.14.0",
@@ -52,12 +53,12 @@
     "babel-preset-es2015": "6.14.0",
     "babel-preset-stage-0": "6.5.0",
     "babelify": "7.3.0",
-    "browser-sync": "2.14.3",
+    "browser-sync": "2.15.0",
     "browserify": "13.1.0",
     "derequire": "2.0.3",
     "exorcist": "0.4.0",
     "jsdom": "9.5.0",
-    "npm-run-all": "3.0.0",
+    "npm-run-all": "3.1.0",
     "uglifyjs": "2.4.10",
     "watchify": "3.7.0"
   }
