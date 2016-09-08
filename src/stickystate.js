@@ -83,7 +83,7 @@ export default class StickyState extends EventDispatcher {
     }
 
     this.el = element;
-    if(options.scrollClass){
+    if(options && options.scrollClass){
       options.scrollClass = assign({}, defaults.scrollClass, options.scrollClass);
     }
     this.options = assign({}, defaults, options);
