@@ -354,6 +354,7 @@ export default class StickyState extends EventDispatcher {
   }
 
   update() {
+    this.scroll.updateScrollPosition();
     this.updateBounds(true, true);
     this.updateStickyState(false);
   }
