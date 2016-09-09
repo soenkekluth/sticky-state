@@ -19,13 +19,10 @@ const defaults = {
   }
 };
 
-function getScrollPosition() {
-  return (window.scrollY || window.pageYOffset || 0);
-}
 
 function getAbsolutBoundingRect(el, fixedHeight) {
   var rect = el.getBoundingClientRect();
-  var top = rect.top + getScrollPosition();
+  var top = rect.top + Scroll.windowScrollY;
   var height = fixedHeight || rect.height;
   return {
     top: top,
@@ -282,7 +279,10 @@ export default class StickyState extends EventDispatcher {
       this.scroll.on('scroll:down', this.onScrollDirection);
       if(!this.options.scrollClass.persist){
         this.scroll.on('scroll:stop', this.onScrollDirection);
+      }else{
+        // this.scroll.on('scroll:top', this.onScrollDirection);
       }
+
 
       if (hasScrollTarget && this.scroll.scrollY > 0) {
         this.scroll.trigger('scroll:progress');
@@ -324,7 +324,7 @@ export default class StickyState extends EventDispatcher {
 
   getScrollClassObj(obj){
     obj = obj || {};
-    var direction = this.scroll.directionY;
+    var direction = (this.scroll.y <= 0 || this.scroll.y + this.scroll.clientHeight >=this.scroll.scrollHeight )  ? 0 : this.scroll.directionY;
     if (this.options.scrollClass.up || this.options.scrollClass.down) {
       obj[this.options.scrollClass.up] = direction < 0;
       obj[this.options.scrollClass.down] = direction > 0;
@@ -377,10 +377,10 @@ export default class StickyState extends EventDispatcher {
     if (top !== null) {
       var offsetBottom = this.state.restrict.bottom - this.state.bounds.height - top;
       top = this.state.bounds.top - top;
-      if (this.state.sticky === false && scrollY >= top && scrollY <= offsetBottom) {
+      if (this.state.sticky === false && ((scrollY >= top && scrollY <= offsetBottom) || (top <= 0 && scrollY < top))) {
         sticky = true;
         absolute = false;
-      } else if (this.state.sticky && (scrollY < top || scrollY > offsetBottom)) {
+      } else if (this.state.sticky && (top > 0 && scrollY < top || scrollY > offsetBottom)) {
         sticky = false;
         absolute = scrollY > offsetBottom;
       }
