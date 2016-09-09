@@ -11,6 +11,7 @@
     "dist": "npm run build && npm run build-lib",
     "start": "npm run build && run-p watch-js server",
     "build-lib": "BABEL_ENV=production babel src -d dist",
+    "devserver": "webpack-dev-server --open examples/index.html",
     "server": "browser-sync start --no-ghost-mode --server --directory --files 'examples/**/**, dist/*.js' --startPath examples/index.html"
   },
   "repository": {
@@ -55,6 +56,7 @@
     "jsdom": "9.5.0",
     "npm-run-all": "3.1.0",
     "uglifyjs": "2.4.10",
-    "webpack": "1.13.2"
+    "webpack": "1.13.2",
+    "webpack-dev-server": "1.15.1"
   }
 }

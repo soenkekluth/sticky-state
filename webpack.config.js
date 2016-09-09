@@ -26,5 +26,8 @@ module.exports = {
     //     warnings: false
     //   }
     // })
-  ]
+  ],
+  devServer: {
+      contentBase: "./",
+  }
 };

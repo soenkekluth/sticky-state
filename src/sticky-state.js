@@ -11,6 +11,8 @@ const defaults = {
   fixedClass: 'sticky-fixed',
   wrapperClass: 'sticky-wrap',
   absoluteClass: 'is-absolute',
+
+
   scrollClass: {
     down: null,
     up: null,
