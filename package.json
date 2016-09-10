@@ -1,6 +1,6 @@
 {
   "name": "sticky-state",
-  "version": "2.1.3",
+  "version": "2.1.4",
   "description": "StickyState is a high performant module making native position:sticky statefull and polyfill the missing sticky browser feature",
   "main": "dist/sticky-state.js",
   "jsnext:main": "src/sticky-state.js",
@@ -38,7 +38,7 @@
     "delegatejs": "1.1.0",
     "eventdispatcher": "1.6.0",
     "object-assign": "4.1.0",
-    "scroll-events": "1.1.1"
+    "scroll-events": "1.1.2"
   },
   "devDependencies": {
     "babel-cli": "6.14.0",

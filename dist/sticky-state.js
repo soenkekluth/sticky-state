@@ -14,10 +14,6 @@ var _classname = require('classname');
 
 var _classname2 = _interopRequireDefault(_classname);
 
-var _scrollEvents = require('scroll-events');
-
-var _scrollEvents2 = _interopRequireDefault(_scrollEvents);
-
 var _eventdispatcher = require('eventdispatcher');
 
 var _eventdispatcher2 = _interopRequireDefault(_eventdispatcher);
@@ -25,6 +21,10 @@ var _eventdispatcher2 = _interopRequireDefault(_eventdispatcher);
 var _delegatejs = require('delegatejs');
 
 var _delegatejs2 = _interopRequireDefault(_delegatejs);
+
+var _scrollEvents = require('scroll-events');
+
+var _scrollEvents2 = _interopRequireDefault(_scrollEvents);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -58,7 +58,9 @@ function getAbsolutBoundingRect(el, fixedHeight) {
     top: top,
     bottom: top + height,
     height: height,
-    width: rect.width
+    width: rect.width,
+    left: rect.left,
+    right: rect.right
   };
 }
 
@@ -72,13 +74,20 @@ function addBounds(rect1, rect2) {
 function getPositionStyle(el) {
   var obj = {
     top: null,
-    bottom: null
+    bottom: null,
+    left: null,
+    right: null
   };
 
+  var style = window.getComputedStyle(el, null);
+
   for (var key in obj) {
-    var value = parseInt(window.getComputedStyle(el)[key]);
+    var value = parseInt(style.getPropertyValue(key));
     value = isNaN(value) ? null : value;
     obj[key] = value;
+    if (value) {
+      return obj;
+    }
   }
 
   return obj;
@@ -99,7 +108,6 @@ var StickyState = function (_EventDispatcher) {
     _classCallCheck(this, StickyState);
 
     var elements;
-    // console.log(element);
     if (element instanceof window.NodeList) {
       elements = [].slice.call(element, 1);
       element = element[0];
@@ -133,12 +141,14 @@ var StickyState = function (_EventDispatcher) {
       },
       style: {
         top: null,
-        bottom: null
+        bottom: null,
+        left: null,
+        right: null
       },
       disabled: _this.options.disabled
     }, true);
 
-    _this.scrollTarget = window.getComputedStyle(_this.el.parentNode).overflow !== 'auto' ? window : _this.el.parentNode;
+    _this.scrollTarget = _scrollEvents2.default.getScrollParent(_this.el);
     _this.hasOwnScrollTarget = _this.scrollTarget !== window;
     if (_this.hasOwnScrollTarget) {
       _this.updateFixedOffset = (0, _delegatejs2.default)(_this, _this.updateFixedOffset);
@@ -398,8 +408,11 @@ var StickyState = function (_EventDispatcher) {
       }
 
       var scrollY = this.scroll.y;
+      var scrollX = this.scroll.x;
       var top = this.state.style.top;
       var bottom = this.state.style.bottom;
+      var left = this.state.style.left;
+      var right = this.state.style.right;
       var sticky = this.state.sticky;
       var absolute = this.state.absolute;
 
@@ -414,7 +427,6 @@ var StickyState = function (_EventDispatcher) {
           absolute = scrollY > offsetBottom;
         }
       } else if (bottom !== null) {
-
         scrollY += window.innerHeight;
         var offsetTop = this.state.restrict.top + this.state.bounds.height - bottom;
         bottom = this.state.bounds.bottom + bottom;
@@ -426,7 +438,19 @@ var StickyState = function (_EventDispatcher) {
           sticky = false;
           absolute = scrollY <= offsetTop;
         }
-      }
+      } //else if (left !== null) {
+      //   console.log(left, scrollX);
+      //   var offsetLeft = this.state.restrict.left + this.state.bounds.width - left;
+      //   // top = this.state.bounds.top - top;
+      //   if (this.state.sticky === false && (scrollX >= left)){
+      //     console.info('restrict', this.state.restrict);
+      //     sticky = true;
+      //     absolute = false;
+      // }  //  else if (this.state.sticky && (top > 0 && scrollY < top || scrollY > offsetBottom)) {
+      //   sticky = false;
+      //   absolute = scrollY > offsetBottom;
+      // }
+      // }
       return { sticky: sticky, absolute: absolute };
     }
   }, {
@@ -472,14 +496,12 @@ var StickyState = function (_EventDispatcher) {
 
         if (this.state.absolute !== this.lastState.absolute) {
           this.wrapper.style.position = this.state.absolute ? 'relative' : '';
-
           classNameObj[this.options.absoluteClass] = this.state.absolute;
-          // className = className.indexOf(this.options.absoluteClass) === -1 && this.state.absolute ? className + (' ' + this.options.absoluteClass) : className.split((' ' + this.options.absoluteClass)).join('');
           this.el.style.marginTop = this.state.absolute && this.state.style.top !== null ? this.state.restrict.height - (this.state.bounds.height + this.state.style.top) + (this.state.restrict.top - this.state.bounds.top) + 'px' : '';
           this.el.style.marginBottom = this.state.absolute && this.state.style.bottom !== null ? this.state.restrict.height - (this.state.bounds.height + this.state.style.bottom) + (this.state.restrict.bottom - this.state.bounds.bottom) + 'px' : '';
         }
 
-        if (this.hasOwnScrollTarget && !this.state.absolute && this.lastState.fixedOffset !== this.state.fixedOffset) {
+        if ((this.state.style.top || this.state.style.bottom) && this.hasOwnScrollTarget && !this.state.absolute && this.lastState.fixedOffset !== this.state.fixedOffset) {
           this.el.style.marginTop = this.state.fixedOffset;
         }
       }
@@ -522,7 +544,6 @@ exports.default = StickyState;
 
 
 var _canSticky = null;
-var _passiveEvents = null;
 
 var Can = function () {
   function Can() {
@@ -541,7 +562,7 @@ var Can = function () {
           return _globals.canSticky = window.Modernizr.csspositionsticky;
         }
 
-        var documentFragment = typeof document.createDocumentFragment === 'function' ? document.createDocumentFragment() : document.documentElement;
+        var documentFragment = document.documentElement; //(typeof document.createDocumentFragment === 'function') ? document.createDocumentFragment() : document.documentElement;
         var testEl = document.createElement('div');
         documentFragment.appendChild(testEl);
         var prefixedSticky = ['sticky', '-webkit-sticky', '-moz-sticky', '-ms-sticky', '-o-sticky'];
@@ -558,23 +579,6 @@ var Can = function () {
         documentFragment.removeChild(testEl);
       }
       return _canSticky;
-    }
-  }, {
-    key: 'passiveEvents',
-    get: function get() {
-      if (_passiveEvents !== null) {
-        return _passiveEvents;
-      }
-      try {
-        var opts = Object.defineProperty({}, 'passive', {
-          get: function get() {
-            _passiveEvents = true;
-          }
-        });
-        window.addEventListener("test", null, opts);
-      } catch (e) {
-        _passiveEvents = false;
-      }
     }
   }]);
 

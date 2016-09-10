@@ -15,8 +15,6 @@
     <p>A test page for the <a href="https://github.com/soenkekluth/sticky-state">StickyState project</a></p>
     <small><p>markup and styles of this document are mostly copied from <a href="http://filamentgroup.github.io/fixed-sticky/demos/demo.html">filamentgroup</a></p></small>
 
-
-
     <div class="container" style="height: 600px; padding-top: 100px;">
       <div class="top sticky" id="top-a">
         Fixed to viewport top A.
@@ -33,6 +31,14 @@
     <hr>
   </div>
     <div class="center">
+    <div class="overflow-x">
+      <div class="overflow-content">
+        <h2 class="sticky left-headline" style="display:inline; left:0">scroll horizontal</h2>
+      </div>
+    </div>
+
+
+
     <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Fuga ut, maxime reiciendis ab pariatur eaque, suscipit esse tempora nesciunt atque assumenda a, consequatur ex et illo qui accusamus facere quis ipsam tenetur. Eaque molestias quo laudantium odio! Velit nobis, consequatur.</p>
 
     <div class="top sticky" id="top-b">
@@ -164,6 +170,8 @@
     <script>
     var out = StickyState.native ? 'native position:sticky supported. state is added' : 'position:sticky is polyfilled';
     document.querySelector('#output').innerText = out;
+
+
 
     function onStickyChange(e){
       if(console){

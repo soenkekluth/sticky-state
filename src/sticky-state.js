@@ -1,8 +1,8 @@
 import assign from 'object-assign';
 import classname from 'classname';
-import Scroll from 'scroll-events';
 import EventDispatcher from 'eventdispatcher';
 import delegate from 'delegatejs';
+import Scroll from 'scroll-events';
 
 
 const defaults = {
@@ -30,7 +30,9 @@ function getAbsolutBoundingRect(el, fixedHeight) {
     top: top,
     bottom: top + height,
     height: height,
-    width: rect.width
+    width: rect.width,
+    left: rect.left,
+    right: rect.right
   };
 }
 
@@ -44,13 +46,20 @@ function addBounds(rect1, rect2) {
 function getPositionStyle(el) {
   var obj = {
     top: null,
-    bottom: null
+    bottom: null,
+    left: null,
+    right: null
   };
 
+  var style = window.getComputedStyle(el, null);
+
   for (var key in obj) {
-    var value = parseInt(window.getComputedStyle(el)[key]);
+    var value = parseInt(style.getPropertyValue(key));
     value = isNaN(value) ? null : value;
     obj[key] = value;
+    if(value) {
+      return obj;
+    }
   }
 
   return obj;
@@ -69,7 +78,6 @@ export default class StickyState extends EventDispatcher {
   constructor(element, options) {
 
     var elements;
-    // console.log(element);
     if (element instanceof window.NodeList) {
       elements = [].slice.call(element,1);
       element = element[0];
@@ -104,12 +112,14 @@ export default class StickyState extends EventDispatcher {
       },
       style: {
         top: null,
-        bottom: null
+        bottom: null,
+        left: null,
+        right: null
       },
       disabled: this.options.disabled
     }, true);
 
-    this.scrollTarget = (window.getComputedStyle(this.el.parentNode).overflow !== 'auto' ? window : this.el.parentNode);
+    this.scrollTarget = Scroll.getScrollParent(this.el);
     this.hasOwnScrollTarget = this.scrollTarget !== window;
     if (this.hasOwnScrollTarget) {
       this.updateFixedOffset = delegate(this, this.updateFixedOffset);
@@ -374,8 +384,11 @@ export default class StickyState extends EventDispatcher {
     }
 
     var scrollY = this.scroll.y;
+    var scrollX = this.scroll.x;
     var top = this.state.style.top;
     var bottom = this.state.style.bottom;
+    var left = this.state.style.left;
+    var right = this.state.style.right;
     var sticky = this.state.sticky;
     var absolute = this.state.absolute;
 
@@ -390,7 +403,6 @@ export default class StickyState extends EventDispatcher {
         absolute = scrollY > offsetBottom;
       }
     } else if (bottom !== null) {
-
       scrollY += window.innerHeight;
       var offsetTop = this.state.restrict.top + this.state.bounds.height - bottom;
       bottom = this.state.bounds.bottom + bottom;
@@ -402,7 +414,19 @@ export default class StickyState extends EventDispatcher {
         sticky = false;
         absolute = scrollY <= offsetTop;
       }
-    }
+     }//else if (left !== null) {
+    //   console.log(left, scrollX);
+    //   var offsetLeft = this.state.restrict.left + this.state.bounds.width - left;
+    //   // top = this.state.bounds.top - top;
+    //   if (this.state.sticky === false && (scrollX >= left)){
+    //     console.info('restrict', this.state.restrict);
+    //     sticky = true;
+    //     absolute = false;
+    // }  //  else if (this.state.sticky && (top > 0 && scrollY < top || scrollY > offsetBottom)) {
+      //   sticky = false;
+      //   absolute = scrollY > offsetBottom;
+      // }
+    // }
     return { sticky: sticky, absolute: absolute };
   }
 
@@ -446,14 +470,12 @@ export default class StickyState extends EventDispatcher {
 
       if (this.state.absolute !== this.lastState.absolute) {
         this.wrapper.style.position = this.state.absolute ? 'relative' : '';
-
         classNameObj[this.options.absoluteClass] = this.state.absolute;
-        // className = className.indexOf(this.options.absoluteClass) === -1 && this.state.absolute ? className + (' ' + this.options.absoluteClass) : className.split((' ' + this.options.absoluteClass)).join('');
         this.el.style.marginTop = (this.state.absolute && this.state.style.top !== null) ? (this.state.restrict.height - (this.state.bounds.height + this.state.style.top) + (this.state.restrict.top - this.state.bounds.top)) + 'px' : '';
         this.el.style.marginBottom = (this.state.absolute && this.state.style.bottom !== null) ? (this.state.restrict.height - (this.state.bounds.height + this.state.style.bottom) + (this.state.restrict.bottom - this.state.bounds.bottom)) + 'px' : '';
       }
 
-      if (this.hasOwnScrollTarget && !this.state.absolute && this.lastState.fixedOffset !== this.state.fixedOffset) {
+      if ((this.state.style.top || this.state.style.bottom) && (this.hasOwnScrollTarget && !this.state.absolute && this.lastState.fixedOffset !== this.state.fixedOffset)) {
         this.el.style.marginTop = this.state.fixedOffset;
       }
     }
@@ -473,7 +495,7 @@ export default class StickyState extends EventDispatcher {
 }
 
 var _canSticky = null;
-var _passiveEvents = null;
+
 
 class Can {
 
@@ -487,7 +509,7 @@ class Can {
         return _globals.canSticky = window.Modernizr.csspositionsticky;
       }
 
-      var documentFragment = (typeof document.createDocumentFragment === 'function') ? document.createDocumentFragment() : document.documentElement;
+      var documentFragment = document.documentElement; //(typeof document.createDocumentFragment === 'function') ? document.createDocumentFragment() : document.documentElement;
       var testEl = document.createElement('div');
       documentFragment.appendChild(testEl);
       var prefixedSticky = ['sticky', '-webkit-sticky', '-moz-sticky', '-ms-sticky', '-o-sticky'];
@@ -506,22 +528,6 @@ class Can {
     return _canSticky;
   };
 
-
-  static get passiveEvents() {
-    if (_passiveEvents !== null) {
-      return _passiveEvents;
-    }
-    try {
-      var opts = Object.defineProperty({}, 'passive', {
-        get: () => {
-          _passiveEvents = true;
-        }
-      });
-      window.addEventListener("test", null, opts);
-    } catch (e) {
-      _passiveEvents = false;
-    }
-  }
 }
 
 
