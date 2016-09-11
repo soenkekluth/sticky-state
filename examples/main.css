@@ -62,9 +62,6 @@ body {
   padding: 1em;
   width: 100%;
   max-width: 540px;
-  -webkit-box-sizing: border-box;
-     -moz-box-sizing: border-box;
-          box-sizing: border-box;
 }
 
 .bottom .state,
@@ -109,6 +106,10 @@ body {
 
 #top-a {
   top: 32px;
+}
+
+#top-b {
+  margin-top: 32px;
 }
 
 #bottom-b {
@@ -255,3 +256,20 @@ body {
       #ffffff 20px
     );
 }
+
+
+
+.left-headline {
+  background-color: #f00;
+  background-color: rgba(255, 0, 0, .6);
+  padding: 1em;
+  display:inline-block;
+  left:0px;
+  margin-left: 2em;
+}
+
+/*
+#top-b{
+  margin-top: 20px;
+}
+*/

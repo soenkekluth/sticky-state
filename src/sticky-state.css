@@ -1,16 +1,24 @@
 .sticky {
   position: -webkit-sticky;
-  position: -moz-sticky;
-  position: -ms-sticky;
-  position: -o-sticky;
   position: sticky;
 }
 
 .sticky.sticky-fixed.is-sticky {
+  margin-top: 0;
+  margin-bottom: 0;
   position: fixed;
   -webkit-backface-visibility: hidden;
-          backface-visibility: hidden;
+          -moz-backface-visibility: hidden;
+       backface-visibility: hidden;
 }
+
+.sticky.sticky-fixed.is-sticky:not([style*="margin-top"]) {
+  margin-top: 0 !important;
+}
+.sticky.sticky-fixed.is-sticky:not([style*="margin-bottom"]) {
+  margin-bottom: 0 !important;
+}
+
 
 .sticky.sticky-fixed.is-absolute{
   position: absolute;

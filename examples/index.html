@@ -33,7 +33,7 @@
     <div class="center">
     <div class="overflow-x">
       <div class="overflow-content">
-        <h2 class="sticky left-headline" style="display:inline; left:0">scroll horizontal</h2>
+        <h2 class="sticky-- left-headline">scroll horizontal</h2>
       </div>
     </div>
 
@@ -41,8 +41,8 @@
 
     <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Fuga ut, maxime reiciendis ab pariatur eaque, suscipit esse tempora nesciunt atque assumenda a, consequatur ex et illo qui accusamus facere quis ipsam tenetur. Eaque molestias quo laudantium odio! Velit nobis, consequatur.</p>
 
-    <div class="top sticky" id="top-b">
-      Fixed to viewport top B.
+    <div id="top-b" class="top sticky" >
+      Fixed to viewport top <br> with margin-top
       <div class="state">state: </div>
       <div class="scroll">scrolling: </div>
     </div>
@@ -171,8 +171,6 @@
     var out = StickyState.native ? 'native position:sticky supported. state is added' : 'position:sticky is polyfilled';
     document.querySelector('#output').innerText = out;
 
-
-
     function onStickyChange(e){
       if(console){
         console.log(e.type , e.target.id);
@@ -185,9 +183,9 @@
         down: 'sticky-scroll-down',
         up: 'sticky-scroll-up'
       }
-    })
-    .on('sticky:on', onStickyChange)
-    .on('sticky:off', onStickyChange);
+    });
+    // .on('sticky:on', onStickyChange)
+    // .on('sticky:off', onStickyChange);
 
     </script>
 

@@ -32,17 +32,28 @@ Your css should contain the following lines:
 (you can specify the classNames in js)
 ```css
 .sticky {
+  position: -webkit-sticky;
   position: sticky;
 }
 
 .sticky.sticky-fixed.is-sticky {
   position: fixed;
+  -webkit-backface-visibility: hidden;
+  -moz-backface-visibility: hidden;
   backface-visibility: hidden;
 }
 
-.sticky.sticky-fixed.is-absolute {
+.sticky.sticky-fixed.is-sticky:not([style*="margin-top"]) {
+  margin-top: 0 !important;
+}
+.sticky.sticky-fixed.is-sticky:not([style*="margin-bottom"]) {
+  margin-bottom: 0 !important;
+}
+
+.sticky.sticky-fixed.is-absolute{
   position: absolute;
 }
+
 ```
 
 ### js
