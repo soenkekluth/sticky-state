@@ -28,6 +28,8 @@ https://rawgit.com/soenkekluth/sticky-state/master/examples/index.html
 
 #### headroom style
 https://rawgit.com/soenkekluth/sticky-state/master/examples/headroom.html
+<br/>
+<br/>
 
 ### css
 Your css should contain the following lines: 
