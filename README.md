@@ -35,11 +35,11 @@ https://rawgit.com/soenkekluth/sticky-state/master/examples/index.html
 https://rawgit.com/soenkekluth/sticky-state/master/examples/headroom.html
 
 <br/>
-<br/>
 
 ### css
 Your css should contain the following lines: 
 (you can specify the classNames in js)
+https://github.com/soenkekluth/sticky-state/blob/master/dist/sticky-state.css
 ```css
 .sticky {
   position: -webkit-sticky;
