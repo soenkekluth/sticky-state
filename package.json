@@ -9,9 +9,9 @@
     "watch-js": "NODE_ENV=development webpack -wd",
     "build": "NODE_ENV=production webpack -p && cp src/sticky-state.css dist/",
     "dist": "npm run build && npm run build-lib",
-    "start": "npm run build && run-p watch-js server",
+    "start": "npm run build && run-p watch-js devserver",
     "build-lib": "BABEL_ENV=production babel src -d dist",
-    "devserver": "webpack-dev-server --open examples/index.html",
+    "devserver": "webpack-dev-server --inline --open",
     "server": "browser-sync start --no-ghost-mode --server --directory --files 'examples/**/**, dist/*.js' --startPath examples/index.html"
   },
   "repository": {
