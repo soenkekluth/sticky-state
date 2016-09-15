@@ -60,13 +60,15 @@ Your css should contain the following lines:
 
 ### js
 ```javascript
-
 var StickyState = require('sticky-state');
-
-new StickyState(yourElement);
-
 //  all elements with class .sticky will have sticky state:
 new StickyState(document.querySelectorAll('.sticky'))
+```
+
+#### options
+```javascript
+
+var StickyState = require('sticky-state');
 
 // the props you can set (except scrollClass this shows the default options):
 var stickyOptions = {
@@ -86,11 +88,15 @@ var stickyOptions = {
 // instantiate with options
 var stickyElements = new StickyState(document.querySelectorAll('.sticky'), stickyOptions);
 
-// events:
-stickyElements
+```
+
+#### api / events
+```javascript
+var StickyState = require('sticky-state');
+new StickyState(document.querySelectorAll('.sticky'))
   .on('sticky:on', function(e){console.log('sticky:on', e.target);})
   .on('sticky:off', function(e){console.log('sticky:off' ,e.target);});
-  
+
 ```
 
 ### React Component
