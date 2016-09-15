@@ -57,12 +57,13 @@ Your css should contain the following lines:
 }
 
 ```
+<br/>
 
 ### js
 ```javascript
 var StickyState = require('sticky-state');
+new StickyState(document.querySelectorAll('.sticky'));
 //  all elements with class .sticky will have sticky state:
-new StickyState(document.querySelectorAll('.sticky'))
 ```
 
 #### options
