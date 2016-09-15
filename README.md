@@ -18,16 +18,22 @@ none!
 ### Browser support
 IE >= 9, *
 
+<br/>
+
 ### Install
 ```
 npm install sticky-state
 ```
+
+<br/>
+
 ### Demo
 #### all you can eat
 https://rawgit.com/soenkekluth/sticky-state/master/examples/index.html
 
 #### headroom style
 https://rawgit.com/soenkekluth/sticky-state/master/examples/headroom.html
+
 <br/>
 <br/>
 
@@ -101,6 +107,7 @@ new StickyState(document.querySelectorAll('.sticky'))
   .on('sticky:off', function(e){console.log('sticky:off' ,e.target);});
 
 ```
+<br/>
 
 ### React Component
 https://github.com/soenkekluth/react-sticky-state
