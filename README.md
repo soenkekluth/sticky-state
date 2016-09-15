@@ -76,6 +76,7 @@ var stickyOptions = {
   fixedClass:     'sticky-fixed',
   wrapperClass:   'sticky-wrap',
   absoluteClass:  'is-absolute',
+  // do only set the following option if you really need a class for the scroll direction on the element. else this could be heavy unnassesary dom manipulation 
   scrollClass:{
     down: 'sticky-scroll-down',
     up: 'sticky-scroll-up'
