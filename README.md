@@ -68,7 +68,7 @@ new StickyState(yourElement);
 //  all elements with class .sticky will have sticky state:
 new StickyState(document.querySelectorAll('.sticky'))
 
-// the props you can set:
+// the props you can set (except scrollClass this shows the default options):
 var stickyOptions = {
   disabled:       false,
   className:      'sticky',
