@@ -18,11 +18,11 @@ none!
 ### Browser support
 IE >= 9, *
 
-### install
+### Install
 ```
 npm install sticky-state
 ```
-### demo
+### Demo
 #### all you can eat
 https://rawgit.com/soenkekluth/sticky-state/master/examples/index.html
 
