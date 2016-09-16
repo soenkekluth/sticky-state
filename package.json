@@ -1,6 +1,6 @@
 {
   "name": "sticky-state",
-  "version": "2.1.5",
+  "version": "2.1.6",
   "description": "StickyState is a high performant module making native position:sticky statefull and polyfill the missing sticky browser feature",
   "main": "dist/sticky-state.js",
   "jsnext:main": "src/sticky-state.js",
@@ -11,8 +11,7 @@
     "dist": "npm run build && npm run build-lib",
     "start": "npm run build && run-p watch-js devserver",
     "build-lib": "BABEL_ENV=production babel src -d dist",
-    "devserver": "webpack-dev-server --inline --open",
-    "server": "browser-sync start --no-ghost-mode --server --directory --files 'examples/**/**, dist/*.js' --startPath examples/index.html"
+    "devserver": "webpack-dev-server --inline --open"
   },
   "repository": {
     "type": "git",
@@ -47,16 +46,9 @@
     "babel-plugin-add-module-exports": "0.2.1",
     "babel-plugin-transform-class-constructor-call": "6.8.0",
     "babel-plugin-transform-class-properties": "6.11.5",
-    "babel-plugin-transform-decorators-legacy": "1.3.4",
-    "babel-plugin-transform-es2015-classes": "6.14.0",
-    "babel-plugin-transform-proto-to-assign": "6.9.0",
-    "babel-plugin-transform-remove-console": "6.8.0",
     "babel-preset-es2015": "6.14.0",
-    "babel-preset-stage-0": "6.5.0",
-    "browser-sync": "2.15.0",
     "jsdom": "9.5.0",
     "npm-run-all": "3.1.0",
-    "uglifyjs": "2.4.10",
     "webpack": "1.13.2",
     "webpack-dev-server": "1.15.1"
   }

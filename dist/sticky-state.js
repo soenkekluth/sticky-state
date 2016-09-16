@@ -46,7 +46,8 @@ var defaults = {
     down: null,
     up: null,
     none: null,
-    persist: false
+    persist: false,
+    active: false
   }
 };
 
@@ -85,7 +86,7 @@ var initialState = {
   disabled: false
 };
 
-function getAbsolutBoundingRect(el, fixedHeight) {
+var getAbsolutBoundingRect = function getAbsolutBoundingRect(el, fixedHeight) {
   var rect = el.getBoundingClientRect();
   var top = rect.top + _scrollEvents2.default.windowScrollY;
   var height = fixedHeight || rect.height;
@@ -97,18 +98,18 @@ function getAbsolutBoundingRect(el, fixedHeight) {
     left: rect.left,
     right: rect.right
   };
-}
+};
 
-function addBounds(rect1, rect2) {
+var addBounds = function addBounds(rect1, rect2) {
   var rect = (0, _objectAssign2.default)({}, rect1);
   rect.top -= rect2.top;
   rect.left -= rect2.left;
   rect.right = rect.left + rect1.width;
   rect.bottom = rect.top + rect1.height;
   return rect;
-}
+};
 
-function getPositionStyle(el) {
+var getPositionStyle = function getPositionStyle(el) {
 
   var result = {};
   var style = window.getComputedStyle(el, null);
@@ -120,15 +121,15 @@ function getPositionStyle(el) {
   }
 
   return result;
-}
+};
 
-function getPreviousElementSibling(el) {
+var getPreviousElementSibling = function getPreviousElementSibling(el) {
   var prev = el.previousElementSibling;
   if (prev && prev.tagName.toLocaleLowerCase() === 'script') {
     prev = getPreviousElementSibling(prev);
   }
   return prev;
-}
+};
 
 var StickyState = function (_EventDispatcher) {
   _inherits(StickyState, _EventDispatcher);
@@ -147,7 +148,7 @@ var StickyState = function (_EventDispatcher) {
     _this.el = element;
 
     if (options && options.scrollClass) {
-      options.scrollClass = (0, _objectAssign2.default)({}, defaults.scrollClass, options.scrollClass);
+      options.scrollClass = (0, _objectAssign2.default)({}, defaults.scrollClass, options.scrollClass, { active: true });
     }
     _this.options = (0, _objectAssign2.default)({}, defaults, options);
 
@@ -262,7 +263,7 @@ var StickyState = function (_EventDispatcher) {
           rect = getAbsolutBoundingRect(elem);
           if (this.hasOwnScrollTarget) {
             rect = addBounds(rect, getAbsolutBoundingRect(this.scrollTarget));
-            offsetY += this.scroll.scrollY;
+            offsetY += this.scroll.y;
           }
           rect.top = rect.top + offsetY;
         }
@@ -321,10 +322,8 @@ var StickyState = function (_EventDispatcher) {
         this.scroll.on('scroll:stop', this.onScroll);
         this.scroll.on('scroll:up', this.onScrollDirection);
         this.scroll.on('scroll:down', this.onScrollDirection);
-        if (!this.options.scrollClass.persist) {
+        if (this.options.scrollClass.active && !this.options.scrollClass.persist) {
           this.scroll.on('scroll:stop', this.onScrollDirection);
-        } else {
-          // this.scroll.on('scroll:top', this.onScrollDirection);
         }
 
         if (hasScrollTarget && this.scroll.scrollY > 0) {
@@ -372,7 +371,7 @@ var StickyState = function (_EventDispatcher) {
     value: function getScrollClassObj(obj) {
       obj = obj || {};
       var direction = this.scroll.y <= 0 || this.scroll.y + this.scroll.clientHeight >= this.scroll.scrollHeight ? 0 : this.scroll.directionY;
-      if (this.options.scrollClass.up || this.options.scrollClass.down) {
+      if (this.options.scrollClass.active) {
         obj[this.options.scrollClass.up] = direction < 0;
         obj[this.options.scrollClass.down] = direction > 0;
       }
@@ -496,8 +495,8 @@ var StickyState = function (_EventDispatcher) {
       if (!Can.sticky) {
         var height = this.state.disabled || this.state.bounds.height === null || !this.state.sticky && !this.state.absolute ? 'auto' : this.state.bounds.height + 'px';
         this.wrapper.style.height = height;
-        this.wrapper.style.marginTop = height === 'auto' ? '' : this.state.style['margin-top'] + 'px';
-        this.wrapper.style.marginBottom = height === 'auto' ? '' : this.state.style['margin-bottom'] + 'px';
+        this.wrapper.style.marginTop = height === 'auto' ? '' : this.state.style['margin-top'] ? this.state.style['margin-top'] + 'px' : '';
+        this.wrapper.style.marginBottom = height === 'auto' ? '' : this.state.style['margin-bottom'] ? this.state.style['margin-bottom'] + 'px' : '';
 
         if (this.state.absolute !== this.lastState.absolute) {
           this.wrapper.style.position = this.state.absolute ? 'relative' : '';
