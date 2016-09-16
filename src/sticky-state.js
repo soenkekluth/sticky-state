@@ -280,7 +280,7 @@ export default class StickyState extends EventDispatcher {
   updateFixedOffset() {
     this.lastState.fixedOffset = this.state.fixedOffset;
     if (this.state.sticky) {
-      this.state.fixedOffset = (this.scrollTarget.getBoundingClientRect().top + this.state.bounds.height * .5) + 'px;';
+      this.state.fixedOffset = (this.scrollTarget.getBoundingClientRect().top) + 'px;';
     } else {
       this.state.fixedOffset = '';
     }
@@ -463,28 +463,27 @@ export default class StickyState extends EventDispatcher {
       var elementStyle = '';
       var height = (this.state.disabled || this.state.bounds.height === null || (!this.state.sticky && !this.state.absolute)) ? 'auto;' : this.state.bounds.height + 'px;';
       var wrapperStyle = 'height:' + height;
-      wrapperStyle += (height === 'auto;') ? '' : (this.state.style['margin-top'] ? 'margin-top:' + this.state.style['margin-top'] + 'px;' : '') + (this.state.style['margin-bottom'] ? 'margin-bottom' + this.state.style['margin-bottom'] + 'px;' : '');
+      wrapperStyle += (height === 'auto;') ? '' : (this.state.style['margin-top'] ? 'margin-top:' + this.state.style['margin-top'] + 'px;' : '0;') + (this.state.style['margin-bottom'] ? 'margin-bottom' + this.state.style['margin-bottom'] + 'px;' : '0;');
 
       if (this.state.absolute !== this.lastState.absolute) {
         wrapperStyle += this.state.absolute ? 'position:relative;' : '';
         classNameObj[this.options.absoluteClass] = this.state.absolute;
-        if (this.state.absolute) {
-          elementStyle += this.state.absolute ? ((this.state.style.top !== null) ? ('margin-top:' + (this.state.restrict.height - (this.state.bounds.height + this.state.style.top) + (this.state.restrict.top - this.state.bounds.top)) + 'px;') : '' + ((this.state.style.bottom !== null) ? ('margin-bottom:' + (this.state.restrict.height - (this.state.bounds.height + this.state.style.bottom) + (this.state.restrict.bottom - this.state.bounds.bottom)) + 'px;') : '')) : '';
-        }
+        elementStyle += this.state.absolute ? ((this.state.style.top !== null) ? ('margin-top:' + (this.state.restrict.height - (this.state.bounds.height + this.state.style.top) + (this.state.restrict.top - this.state.bounds.top)) + 'px;') : 'margin-top:0;' + ((this.state.style.bottom !== null) ? ('margin-bottom:' + (this.state.restrict.height - (this.state.bounds.height + this.state.style.bottom) + (this.state.restrict.bottom - this.state.bounds.bottom)) + 'px;') : 'margin-bottom:0;')) : 'margin-bottom:0;margin-top:0;';
+
       }
 
       if ((this.state.style.top !== null || this.state.style.bottom !== null) && (this.hasOwnScrollTarget && !this.state.absolute && this.lastState.fixedOffset !== this.state.fixedOffset)) {
-        elementStyle += this.state.fixedOffset ? 'margin-top:' + this.state.fixedOffset : '';
+        elementStyle += 'margin-top:' + (this.state.fixedOffset ? this.state.fixedOffset : '0;');
       }
 
       if (this.state.wrapperStyle !== wrapperStyle) {
         this.state.wrapperStyle = wrapperStyle;
-        this.wrapper.setAttribute('style', wrapperStyle);
+        this.wrapper.style.cssText += wrapperStyle;
       }
 
       if (this.state.elementStyle !== elementStyle) {
         this.state.elementStyle = elementStyle;
-        this.el.setAttribute('style', elementStyle);
+        this.el.style.cssText += elementStyle;
       }
     }
 
