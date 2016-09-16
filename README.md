@@ -34,6 +34,9 @@ https://rawgit.com/soenkekluth/sticky-state/master/examples/index.html
 #### headroom style
 https://rawgit.com/soenkekluth/sticky-state/master/examples/headroom.html
 
+#### simple
+https://rawgit.com/soenkekluth/sticky-state/master/examples/simple.html
+
 <br/>
 
 ### css
