@@ -1,11 +1,13 @@
 const webpack = require('webpack');
 const package = require('./package');
 
-const banner = `${package.name} ${package.version} - ${package.description}\nCopyright (c) ${ new Date().getFullYear() } ${package.author} - ${package.homepage}\nLicense: ${package.license}`;
-
 module.exports = {
   'context': __dirname + '/src',
-  'entry': './sticky-state.js',
+  'entry': [
+    // 'webpack/hot/dev-server',
+    'webpack-dev-server/client?http://localhost:3000/',
+    './sticky-state.js'
+  ],
   'output': {
     'path': __dirname + '/dist',
     'filename': `${package.name}.min.js`,
@@ -20,14 +22,13 @@ module.exports = {
     }]
   },
   'plugins': [
-    new webpack.BannerPlugin(banner),
-    // new webpack.optimize.UglifyJsPlugin({
-    //   compressor: {
-    //     warnings: false
-    //   }
-    // })
+    //new webpack.HotModuleReplacementPlugin()
   ],
   devServer: {
-      contentBase: "./",
+    // contentBase: './',
+    port: 3000,
+    // hot: true,
+    open: true,
+    inline: true
   }
 };

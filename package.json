@@ -6,12 +6,12 @@
   "jsnext:main": "src/sticky-state.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "watch-js": "NODE_ENV=development webpack -wd",
-    "build": "NODE_ENV=production webpack -p && cp src/sticky-state.css dist/",
+    "watch-js": "NODE_ENV=development webpack -wd --config ./webpack.dev.js",
+    "build": "NODE_ENV=production webpack -p --config ./webpack.prod.js && cp src/sticky-state.css dist/",
     "dist": "npm run build && npm run build-lib",
     "start": "npm run build && run-p watch-js devserver",
     "build-lib": "BABEL_ENV=production babel src -d dist",
-    "devserver": "webpack-dev-server --inline --open"
+    "devserver": "webpack-dev-server --config ./webpack.dev.js"
   },
   "repository": {
     "type": "git",
@@ -50,6 +50,6 @@
     "jsdom": "9.5.0",
     "npm-run-all": "3.1.0",
     "webpack": "1.13.2",
-    "webpack-dev-server": "1.15.1"
+    "webpack-dev-server": "1.15.2"
   }
 }
