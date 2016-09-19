@@ -512,7 +512,7 @@ class Can {
     if (typeof window !== 'undefined') {
 
       if (window.Modernizr && window.Modernizr.hasOwnProperty('csspositionsticky')) {
-        return _globals.canSticky = window.Modernizr.csspositionsticky;
+        return _canSticky = window.Modernizr.csspositionsticky;
       }
 
       var documentFragment = document.documentElement;
