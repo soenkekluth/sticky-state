@@ -10,7 +10,7 @@ Unlike almost all polyfills you can find in the wild, StickyState is highly perf
 
 In some cases you also need to know in which direction the user scrolls - for example if you want to hide a sticky header when the user scrolls up. if you set the scrollClass property of the options StickyState will add your choosen classNames to the element when it is sticky and scrolling.
 
-As a standalone Library its 6.9kb gzipped. 
+As a standalone Library its 6.75kb gzipped. 
 
 ### Dependencies
 none!
