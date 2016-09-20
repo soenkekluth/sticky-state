@@ -6,6 +6,8 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
+var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
+
 var _objectAssign = require('object-assign');
 
 var _objectAssign2 = _interopRequireDefault(_objectAssign);
@@ -22,9 +24,9 @@ var _delegatejs = require('delegatejs');
 
 var _delegatejs2 = _interopRequireDefault(_delegatejs);
 
-var _scrollEvents = require('scroll-events');
+var _scrollfeatures = require('scrollfeatures');
 
-var _scrollEvents2 = _interopRequireDefault(_scrollEvents);
+var _scrollfeatures2 = _interopRequireDefault(_scrollfeatures);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -90,7 +92,7 @@ var initialState = {
 
 var getAbsolutBoundingRect = function getAbsolutBoundingRect(el, fixedHeight) {
   var rect = el.getBoundingClientRect();
-  var top = rect.top + _scrollEvents2.default.windowScrollY;
+  var top = rect.top + _scrollfeatures2.default.windowScrollY;
   var height = fixedHeight || rect.height;
   return {
     top: top,
@@ -145,7 +147,7 @@ var StickyState = function (_EventDispatcher) {
       element = element[0];
     }
 
-    var _this = _possibleConstructorReturn(this, (StickyState.__proto__ || Object.getPrototypeOf(StickyState)).call(this));
+    var _this = _possibleConstructorReturn(this, (StickyState.__proto__ || Object.getPrototypeOf(StickyState)).call(this, { target: element }));
 
     _this.el = element;
 
@@ -156,20 +158,15 @@ var StickyState = function (_EventDispatcher) {
 
     _this.setState((0, _objectAssign2.default)({}, initialState, { disabled: _this.options.disabled }), true);
 
-    _this.scrollTarget = _scrollEvents2.default.getScrollParent(_this.el);
+    _this.scrollTarget = _scrollfeatures2.default.getScrollParent(_this.el);
     _this.hasOwnScrollTarget = _this.scrollTarget !== window;
     if (_this.hasOwnScrollTarget) {
       _this.updateFixedOffset = (0, _delegatejs2.default)(_this, _this.updateFixedOffset);
     }
 
     _this.firstRender = true;
-    _this.resizeHandler = null;
     _this.scroll = null;
     _this.wrapper = null;
-    _this.eventObject = {
-      target: _this.el,
-      currentTarget: _this
-    };
 
     _this.render = (0, _delegatejs2.default)(_this, _this.render);
     _this.addSrollHandler();
@@ -193,7 +190,7 @@ var StickyState = function (_EventDispatcher) {
       this.state = (0, _objectAssign2.default)({}, this.state, newState);
       if (silent !== true) {
         this.render();
-        this.trigger(this.state.sticky ? 'sticky:on' : 'sticky:off', this.eventObject);
+        this.trigger(this.state.sticky ? 'sticky:on' : 'sticky:off');
       }
     }
   }, {
@@ -206,7 +203,7 @@ var StickyState = function (_EventDispatcher) {
     value: function getBounds(noCache) {
 
       var clientRect = this.getBoundingClientRect();
-      var offsetHeight = _scrollEvents2.default.documentHeight;
+      var offsetHeight = _scrollfeatures2.default.documentHeight;
       noCache = noCache === true;
 
       if (noCache !== true && this.state.bounds.height !== null) {
@@ -314,8 +311,8 @@ var StickyState = function (_EventDispatcher) {
     key: 'addSrollHandler',
     value: function addSrollHandler() {
       if (!this.scroll) {
-        var hasScrollTarget = _scrollEvents2.default.hasScrollTarget(this.scrollTarget);
-        this.scroll = _scrollEvents2.default.getInstance(this.scrollTarget);
+        var hasScrollTarget = _scrollfeatures2.default.hasInstance(this.scrollTarget);
+        this.scroll = _scrollfeatures2.default.getInstance(this.scrollTarget);
         this.onScroll = (0, _delegatejs2.default)(this, this.onScroll);
         this.scroll.on('scroll:start', this.onScroll);
         this.scroll.on('scroll:progress', this.onScroll);
@@ -346,29 +343,44 @@ var StickyState = function (_EventDispatcher) {
           this.scroll.off('scroll:down', this.onScrollDirection);
           this.scroll.off('scroll:stop', this.onScrollDirection);
         }
-        this.scroll.destroy();
+        if (!this.scroll.hasListeners()) {
+          this.scroll.destroy();
+        }
+        this.onScroll = null;
+        this.onScrollDirection = null;
         this.scroll = null;
       }
     }
   }, {
     key: 'addResizeHandler',
     value: function addResizeHandler() {
-      if (!this.resizeHandler) {
-        this.resizeHandler = (0, _delegatejs2.default)(this, this.onResize);
-        window.addEventListener('sticky:update', this.resizeHandler, false);
-        window.addEventListener('resize', this.resizeHandler, false);
-        window.addEventListener('orientationchange', this.resizeHandler, false);
+      if (!this.onResize) {
+        this.onResize = (0, _delegatejs2.default)(this, this.update);
+        window.addEventListener('sticky:update', this.onResize, false);
+        window.addEventListener('resize', this.onResize, false);
+        window.addEventListener('orientationchange', this.onResize, false);
       }
     }
   }, {
     key: 'removeResizeHandler',
     value: function removeResizeHandler() {
-      if (this.resizeHandler) {
-        window.removeEventListener('sticky:update', this.resizeHandler);
-        window.removeEventListener('resize', this.resizeHandler);
-        window.removeEventListener('orientationchange', this.resizeHandler);
-        this.resizeHandler = null;
+      if (this.onResize) {
+        window.removeEventListener('sticky:update', this.onResize);
+        window.removeEventListener('resize', this.onResize);
+        window.removeEventListener('orientationchange', this.onResize);
+        this.onResize = null;
       }
+    }
+  }, {
+    key: 'destroy',
+    value: function destroy() {
+      _get(StickyState.prototype.__proto__ || Object.getPrototypeOf(StickyState.prototype), 'destroy', this).call(this);
+      this.removeSrollHandler();
+      this.removeResizeHandler();
+      this.render = null;
+      this.el = null;
+      this.state = null;
+      this.wrapper = null;
     }
   }, {
     key: 'getScrollClasses',
@@ -384,7 +396,7 @@ var StickyState = function (_EventDispatcher) {
   }, {
     key: 'onScrollDirection',
     value: function onScrollDirection(e) {
-      if (this.state.sticky || e.type === _scrollEvents2.default.EVENT_SCROLL_STOP) {
+      if (this.state.sticky || e.type === _scrollfeatures2.default.EVENT_SCROLL_STOP) {
         this.el.className = (0, _classstring2.default)(this.el.className, this.getScrollClasses());
       }
     }
@@ -396,10 +408,10 @@ var StickyState = function (_EventDispatcher) {
         this.updateFixedOffset();
         if (this.state.sticky && !this.hasWindowScrollListener) {
           this.hasWindowScrollListener = true;
-          _scrollEvents2.default.getInstance(window).on('scroll:progress', this.updateFixedOffset);
+          _scrollfeatures2.default.getInstance(window).on('scroll:progress', this.updateFixedOffset);
         } else if (!this.state.sticky && this.hasWindowScrollListener) {
           this.hasWindowScrollListener = false;
-          _scrollEvents2.default.getInstance(window).off('scroll:progress', this.updateFixedOffset);
+          _scrollfeatures2.default.getInstance(window).off('scroll:progress', this.updateFixedOffset);
         }
       }
     }
@@ -409,11 +421,6 @@ var StickyState = function (_EventDispatcher) {
       this.scroll.updateScrollPosition();
       this.updateBounds(true, true);
       this.updateStickyState(false);
-    }
-  }, {
-    key: 'onResize',
-    value: function onResize(e) {
-      this.update();
     }
   }, {
     key: 'getStickyState',

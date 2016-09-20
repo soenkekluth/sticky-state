@@ -171,12 +171,11 @@
     var out = StickyState.native ? 'native position:sticky supported. state is added' : 'position:sticky is polyfilled';
     document.querySelector('#output').innerText = out;
 
-    function onStickyChange(e){
+    function onStickyChange(e) {
       if(console){
         console.log(e.type , e.target.id);
       }
     };
-
 
     new StickyState(document.querySelectorAll('.sticky'), {
       scrollClass:{

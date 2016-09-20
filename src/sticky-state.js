@@ -2,7 +2,7 @@ import assign from 'object-assign';
 import classString from 'classstring';
 import EventDispatcher from 'eventdispatcher';
 import delegate from 'delegatejs';
-import Scroll from 'scroll-events';
+import ScrollFeatures from 'scrollfeatures';
 
 const defaults = {
   disabled: false,
@@ -61,7 +61,7 @@ const initialState = {
 
 const getAbsolutBoundingRect = (el, fixedHeight) => {
   var rect = el.getBoundingClientRect();
-  var top = rect.top + Scroll.windowScrollY;
+  var top = rect.top + ScrollFeatures.windowScrollY;
   var height = fixedHeight || rect.height;
   return {
     top: top,
@@ -114,7 +114,7 @@ export default class StickyState extends EventDispatcher {
       element = element[0];
     }
 
-    super();
+    super({target: element});
 
     this.el = element;
 
@@ -125,20 +125,15 @@ export default class StickyState extends EventDispatcher {
 
     this.setState(assign({}, initialState, { disabled: this.options.disabled }), true);
 
-    this.scrollTarget = Scroll.getScrollParent(this.el);
+    this.scrollTarget = ScrollFeatures.getScrollParent(this.el);
     this.hasOwnScrollTarget = this.scrollTarget !== window;
     if (this.hasOwnScrollTarget) {
       this.updateFixedOffset = delegate(this, this.updateFixedOffset);
     }
 
     this.firstRender = true;
-    this.resizeHandler = null;
     this.scroll = null;
     this.wrapper = null;
-    this.eventObject = {
-      target: this.el,
-      currentTarget: this
-    };
 
     this.render = delegate(this, this.render);
     this.addSrollHandler();
@@ -174,7 +169,7 @@ export default class StickyState extends EventDispatcher {
     this.state = assign({}, this.state, newState);
     if (silent !== true) {
       this.render();
-      this.trigger(this.state.sticky ? 'sticky:on' : 'sticky:off', this.eventObject);
+      this.trigger(this.state.sticky ? 'sticky:on' : 'sticky:off');
     }
   }
 
@@ -185,7 +180,7 @@ export default class StickyState extends EventDispatcher {
   getBounds(noCache) {
 
     var clientRect = this.getBoundingClientRect();
-    var offsetHeight = Scroll.documentHeight;
+    var offsetHeight = ScrollFeatures.documentHeight;
     noCache = noCache === true;
 
     if (noCache !== true && this.state.bounds.height !== null) {
@@ -291,8 +286,8 @@ export default class StickyState extends EventDispatcher {
 
   addSrollHandler() {
     if (!this.scroll) {
-      var hasScrollTarget = Scroll.hasScrollTarget(this.scrollTarget);
-      this.scroll = Scroll.getInstance(this.scrollTarget);
+      var hasScrollTarget = ScrollFeatures.hasInstance(this.scrollTarget);
+      this.scroll = ScrollFeatures.getInstance(this.scrollTarget);
       this.onScroll = delegate(this, this.onScroll);
       this.scroll.on('scroll:start', this.onScroll);
       this.scroll.on('scroll:progress', this.onScroll);
@@ -322,27 +317,42 @@ export default class StickyState extends EventDispatcher {
         this.scroll.off('scroll:down', this.onScrollDirection);
         this.scroll.off('scroll:stop', this.onScrollDirection);
       }
-      this.scroll.destroy();
+      if(!this.scroll.hasListeners()){
+        this.scroll.destroy();
+      }
+      this.onScroll = null;
+      this.onScrollDirection = null;
       this.scroll = null;
     }
   }
 
   addResizeHandler() {
-    if (!this.resizeHandler) {
-      this.resizeHandler = delegate(this, this.onResize);
-      window.addEventListener('sticky:update', this.resizeHandler, false);
-      window.addEventListener('resize', this.resizeHandler, false);
-      window.addEventListener('orientationchange', this.resizeHandler, false);
+    if (!this.onResize) {
+      this.onResize = delegate(this, this.update);
+      window.addEventListener('sticky:update', this.onResize, false);
+      window.addEventListener('resize', this.onResize, false);
+      window.addEventListener('orientationchange', this.onResize, false);
     }
   }
 
   removeResizeHandler() {
-    if (this.resizeHandler) {
-      window.removeEventListener('sticky:update', this.resizeHandler);
-      window.removeEventListener('resize', this.resizeHandler);
-      window.removeEventListener('orientationchange', this.resizeHandler);
-      this.resizeHandler = null;
+    if (this.onResize) {
+      window.removeEventListener('sticky:update', this.onResize);
+      window.removeEventListener('resize', this.onResize);
+      window.removeEventListener('orientationchange', this.onResize);
+      this.onResize = null;
     }
+  }
+
+
+  destroy() {
+    super.destroy();
+    this.removeSrollHandler();
+    this.removeResizeHandler();
+    this.render = null;
+    this.el = null;
+    this.state = null;
+    this.wrapper = null;
   }
 
   getScrollClasses(obj) {
@@ -356,7 +366,7 @@ export default class StickyState extends EventDispatcher {
   }
 
   onScrollDirection(e) {
-    if (this.state.sticky || e.type === Scroll.EVENT_SCROLL_STOP) {
+    if (this.state.sticky || e.type === ScrollFeatures.EVENT_SCROLL_STOP) {
       this.el.className = classString(this.el.className, this.getScrollClasses());
     }
   }
@@ -367,10 +377,10 @@ export default class StickyState extends EventDispatcher {
       this.updateFixedOffset();
       if (this.state.sticky && !this.hasWindowScrollListener) {
         this.hasWindowScrollListener = true;
-        Scroll.getInstance(window).on('scroll:progress', this.updateFixedOffset);
+        ScrollFeatures.getInstance(window).on('scroll:progress', this.updateFixedOffset);
       } else if (!this.state.sticky && this.hasWindowScrollListener) {
         this.hasWindowScrollListener = false;
-        Scroll.getInstance(window).off('scroll:progress', this.updateFixedOffset);
+        ScrollFeatures.getInstance(window).off('scroll:progress', this.updateFixedOffset);
       }
     }
   }
@@ -379,10 +389,6 @@ export default class StickyState extends EventDispatcher {
     this.scroll.updateScrollPosition();
     this.updateBounds(true, true);
     this.updateStickyState(false);
-  }
-
-  onResize(e) {
-    this.update();
   }
 
   getStickyState() {
