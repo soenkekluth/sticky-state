@@ -106,6 +106,13 @@ const getPreviousElementSibling = el => {
 
 export default class StickyState extends EventDispatcher {
 
+  el = null;
+  firstRender = true;
+  scroll = null;
+  wrapper = null;
+  options = null;
+
+
   constructor(element, options) {
 
     var elements;
@@ -131,9 +138,6 @@ export default class StickyState extends EventDispatcher {
       this.updateFixedOffset = delegate(this, this.updateFixedOffset);
     }
 
-    this.firstRender = true;
-    this.scroll = null;
-    this.wrapper = null;
 
     this.render = delegate(this, this.render);
     this.addSrollHandler();

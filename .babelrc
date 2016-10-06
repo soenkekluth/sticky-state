@@ -5,7 +5,11 @@
 
   "plugins": [
     "transform-class-properties",
-    "transform-class-constructor-call",
+    "transform-class-constructor-call", [
+      "transform-es2015-classes", {
+        "loose": true
+      }
+    ],
     "add-module-exports"
   ]
 }
