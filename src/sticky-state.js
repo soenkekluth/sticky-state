@@ -1,7 +1,6 @@
 import assign from 'object-assign';
 import classString from 'classstring';
 import EventDispatcher from 'eventdispatcher';
-import delegate from 'delegatejs';
 import ScrollFeatures from 'scrollfeatures';
 
 const defaults = {
@@ -20,7 +19,6 @@ const defaults = {
     active: false
   }
 };
-
 
 const initialState = {
   sticky: false,
@@ -61,7 +59,7 @@ const initialState = {
 
 const getAbsolutBoundingRect = (el, fixedHeight) => {
   var rect = el.getBoundingClientRect();
-  var top = rect.top + ScrollFeatures.windowScrollY;
+  var top = rect.top + ScrollFeatures.windowY;
   var height = fixedHeight || rect.height;
   return {
     top: top,
@@ -135,11 +133,11 @@ export default class StickyState extends EventDispatcher {
     this.scrollTarget = ScrollFeatures.getScrollParent(this.el);
     this.hasOwnScrollTarget = this.scrollTarget !== window;
     if (this.hasOwnScrollTarget) {
-      this.updateFixedOffset = delegate(this, this.updateFixedOffset);
+      this.updateFixedOffset = this.updateFixedOffset.bind(this);
     }
 
 
-    this.render = delegate(this, this.render);
+    this.render = this.render.bind(this);
     this.addSrollHandler();
     this.addResizeHandler();
     this.render();
@@ -175,6 +173,10 @@ export default class StickyState extends EventDispatcher {
       this.render();
       this.trigger(this.state.sticky ? 'sticky:on' : 'sticky:off');
     }
+  }
+
+  disable(value) {
+    this.setState({disabled:value});
   }
 
   getBoundingClientRect() {
@@ -292,13 +294,13 @@ export default class StickyState extends EventDispatcher {
     if (!this.scroll) {
       var hasScrollTarget = ScrollFeatures.hasInstance(this.scrollTarget);
       this.scroll = ScrollFeatures.getInstance(this.scrollTarget);
-      this.onScroll = delegate(this, this.onScroll);
+      this.onScroll = this.onScroll.bind(this);
       this.scroll.on('scroll:start', this.onScroll);
       this.scroll.on('scroll:progress', this.onScroll);
       this.scroll.on('scroll:stop', this.onScroll);
 
       if (this.options.scrollClass.active) {
-        this.onScrollDirection = delegate(this, this.onScrollDirection);
+        this.onScrollDirection = this.onScrollDirection.bind(this);
         this.scroll.on('scroll:up', this.onScrollDirection);
         this.scroll.on('scroll:down', this.onScrollDirection);
         if (!this.options.scrollClass.persist) {
@@ -332,7 +334,7 @@ export default class StickyState extends EventDispatcher {
 
   addResizeHandler() {
     if (!this.onResize) {
-      this.onResize = delegate(this, this.update);
+      this.onResize = this.update.bind(this);
       window.addEventListener('sticky:update', this.onResize, false);
       window.addEventListener('resize', this.onResize, false);
       window.addEventListener('orientationchange', this.onResize, false);
@@ -370,7 +372,7 @@ export default class StickyState extends EventDispatcher {
   }
 
   onScrollDirection(e) {
-    if (this.state.sticky || e.type === ScrollFeatures.EVENT_SCROLL_STOP) {
+    if (this.state.sticky || e.type === ScrollFeatures.events.SCROLL_STOP) {
       this.el.className = classString(this.el.className, this.getScrollClasses());
     }
   }
@@ -449,6 +451,11 @@ export default class StickyState extends EventDispatcher {
   }
 
   render() {
+
+    // if (this.state.disabled) {
+    //   return;
+    // }
+
     var classNameObj = {};
 
     if (this.firstRender) {

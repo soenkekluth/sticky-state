@@ -168,6 +168,8 @@
     </div>
 
     <script>
+
+    console.log(StickyState);
     var out = StickyState.native ? 'native position:sticky supported. state is added' : 'position:sticky is polyfilled';
     document.querySelector('#output').innerText = out;
 
@@ -182,8 +184,8 @@
         down: 'sticky-scroll-down',
         up: 'sticky-scroll-up'
       }
-    });
-    // .on('sticky:on', onStickyChange)
+    })
+    .on('sticky:on', onStickyChange)
     // .on('sticky:off', onStickyChange);
 
     </script>
