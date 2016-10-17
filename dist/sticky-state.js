@@ -36,6 +36,7 @@ var defaults = {
   stateClassName: 'is-sticky',
   fixedClass: 'sticky-fixed',
   wrapperClass: 'sticky-wrap',
+  wrapFixedSticky: true,
   absoluteClass: 'is-absolute',
 
   scrollClass: {
@@ -203,7 +204,7 @@ var StickyState = function (_EventDispatcher) {
   };
 
   StickyState.prototype.disable = function disable(value) {
-    this.setState({ disabled: value });
+    this.setState({ disabled: value }, value);
   };
 
   StickyState.prototype.getBoundingClientRect = function getBoundingClientRect() {
@@ -477,9 +478,9 @@ var StickyState = function (_EventDispatcher) {
 
   StickyState.prototype.render = function render() {
 
-    // if (this.state.disabled) {
-    //   return;
-    // }
+    if (this.state.disabled) {
+      return;
+    }
 
     var classNameObj = {};
 
@@ -493,7 +494,9 @@ var StickyState = function (_EventDispatcher) {
         if (parent) {
           parent.insertBefore(this.wrapper, this.el);
         }
-        this.wrapper.appendChild(this.el);
+        if (this.options.wrapFixedSticky) {
+          this.wrapper.appendChild(this.el);
+        }
         classNameObj[this.options.fixedClass] = true;
       }
 
