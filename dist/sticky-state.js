@@ -552,9 +552,6 @@ var StickyState = function (_EventDispatcher) {
   return StickyState;
 }(_eventdispatcher2.default);
 
-exports.default = StickyState;
-
-
 var _canSticky = null;
 
 var Can = function () {
@@ -614,7 +611,10 @@ var StickyStateCollection = function (_EventDispatcher2) {
   };
 
   StickyStateCollection.prototype.update = function update() {
-    window.dispatchEvent(new Event('sticky:update'));
+    var i = -1;
+    while (++i < this.items.length) {
+      this.items[i].update();
+    }
   };
 
   StickyStateCollection.prototype.addListener = function addListener(event, listener) {
@@ -637,4 +637,5 @@ var StickyStateCollection = function (_EventDispatcher2) {
   return StickyStateCollection;
 }(_eventdispatcher2.default);
 
+exports.default = StickyState;
 module.exports = exports['default'];

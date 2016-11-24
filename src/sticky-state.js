@@ -103,7 +103,7 @@ const getPreviousElementSibling = el => {
   return prev;
 };
 
-export default class StickyState extends EventDispatcher {
+class StickyState extends EventDispatcher {
 
   el = null;
   firstRender = true;
@@ -568,7 +568,10 @@ class StickyStateCollection extends EventDispatcher {
   }
 
   update() {
-    window.dispatchEvent(new Event('sticky:update'));
+    var i = -1;
+    while (++i < this.items.length) {
+      this.items[i].update();
+    }
   }
 
   addListener(event, listener) {
@@ -589,3 +592,6 @@ class StickyStateCollection extends EventDispatcher {
   }
 
 }
+
+
+export default StickyState;
