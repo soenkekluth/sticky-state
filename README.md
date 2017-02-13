@@ -12,7 +12,7 @@ In some cases you also need to know in which direction the user scrolls - for ex
 
 As a standalone Library its 6.75kb gzipped. 
 
-# Warning concerning Chromes implementation of native sticky
+# Warning concerning Chromes implementation of native position:sticky
 it looks like chromes implementaton of position:sticky is different to all other implementations out there. don't know if thats a bug - but bottom is currently not recognized by chrome. there will be a fix for this soon in sticky-state 
 
 ### Dependencies
