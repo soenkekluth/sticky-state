@@ -90,13 +90,13 @@ var StickyState = require('sticky-state');
 
 
 var stickyOptions = {
-  disabled: false,
-  className: 'sticky',
-  stateClassName: 'is-sticky',
-  fixedClass: 'sticky-fixed',
-  wrapperClass: 'sticky-wrap',
-  wrapFixedSticky: true,
-  absoluteClass: 'is-absolute',
+  disabled: false, // disable or enable the sticky feature initially
+  className: 'sticky', // the core class which should be equal to the css. see above.
+  stateClassName: 'is-sticky',  // the state class, when the element is actually sticky
+  fixedClass: 'sticky-fixed',  // the fallback class that uses position:fixed to make the element sticky 
+  wrapperClass: 'sticky-wrap', // the fallback (polyfilled) version needs a placeholder that uses the space of the actual sticky element when its position:fixed
+  wrapFixedSticky: true,  // by default the sticky element gets wrapped by the placeholder. if you set it to false it will be inserted right before it.
+  absoluteClass: 'is-absolute',  // the polyfilled sticky element needs to be position:absolut in some cases.
   
   // scrollclass will add a class to the sticky element that is depending on the scroll direction when the element is sticky.
   // when the scrolling stops the class will be the value of "none" unless you set "persist" to true.
