@@ -86,17 +86,25 @@ new StickyState(document.querySelectorAll('.sticky'));
 var StickyState = require('sticky-state');
 
 // the props you can set (except scrollClass this shows the default options):
+
+
+
 var stickyOptions = {
-  disabled:       false,
-  className:      'sticky',
+  disabled: false,
+  className: 'sticky',
   stateClassName: 'is-sticky',
-  fixedClass:     'sticky-fixed',
-  wrapperClass:   'sticky-wrap',
-  absoluteClass:  'is-absolute',
-  // do only set the following option if you really need a class for the scroll direction on the element. else this could be heavy unnassesary dom manipulation 
-  scrollClass:{
-    down: 'sticky-scroll-down',
-    up: 'sticky-scroll-up'
+  fixedClass: 'sticky-fixed',
+  wrapperClass: 'sticky-wrap',
+  wrapFixedSticky: true,
+  absoluteClass: 'is-absolute',
+  
+  // scrollclass will add a class to the sticky element that is depending on the scroll direction when the element gets sticky.
+  
+  scrollClass: {
+    down: null,
+    up: null,
+    none: null,
+    persist: false
   }
 };
 
