@@ -98,7 +98,8 @@ var stickyOptions = {
   wrapFixedSticky: true,
   absoluteClass: 'is-absolute',
   
-  // scrollclass will add a class to the sticky element that is depending on the scroll direction when the element gets sticky.
+  // scrollclass will add a class to the sticky element that is depending on the scroll direction when the element is sticky.
+  // when the scrolling stops the class will be the value of "none" unless you set "persist" to true.
   
   scrollClass: {
     down: null,
