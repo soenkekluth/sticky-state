@@ -1,5 +1,7 @@
 #StickyState
 
+[![Greenkeeper badge](https://badges.greenkeeper.io/soenkekluth/sticky-state.svg)](https://greenkeeper.io/)
+
 StickyState adds state to position:sticky elements and also polyfills the missing native sticky feature.
 
 Dependency free, pure Javascript for IE9+.
