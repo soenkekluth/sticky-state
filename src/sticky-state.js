@@ -483,7 +483,7 @@ class StickyState extends EventDispatcher {
       var elementStyle = '';
       var height = (this.state.disabled || this.state.bounds.height === null || (!this.state.sticky && !this.state.absolute)) ? 'auto;' : this.state.bounds.height + 'px;';
       var wrapperStyle = 'height:' + height;
-      wrapperStyle += (height === 'auto;') ? '' : (this.state.style['margin-top'] ? 'margin-top:' + this.state.style['margin-top'] + 'px;' : '0;') + (this.state.style['margin-bottom'] ? 'margin-bottom' + this.state.style['margin-bottom'] + 'px;' : '0;');
+      wrapperStyle += (height === 'auto;') ? '' : (this.state.style['margin-top'] ? 'margin-top:' + this.state.style['margin-top'] + 'px;' : '0;') + (this.state.style['margin-bottom'] ? 'margin-bottom: ' + this.state.style['margin-bottom'] + 'px;' : '0;');
 
       if (this.state.absolute !== this.lastState.absolute) {
         wrapperStyle += this.state.absolute ? 'position:relative;' : '';
